@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet as WalletIcon, Lock, Unlock, Clock, TrendingUp, ArrowUpRight, ArrowDownRight, Plus, Coffee } from 'lucide-react';
+import { 
+  Wallet as WalletIcon, 
+  Lock, 
+  Unlock, 
+  Clock, 
+  TrendingUp, 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Plus, 
+  Coffee,
+  DollarSign,
+  CheckCircle,
+  AlertCircle,
+  X
+} from 'lucide-react';
 import { PrimaryButton, SecondaryButton } from '../components/buttons/PrimaryButton';
 import { SkeletonLoader } from '../components/loaders/SkeletonLoader';
 import { useApp } from '../context/AppContext';
@@ -54,18 +68,19 @@ export function Wallet() {
       transition={{ duration: 0.5 }}
     >
       <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <motion.div 
           className="mb-8"
-          initial={{ y: -20 }}
-          animate={{ y: 0 }}
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
                 Reward Wallet 💰
               </h1>
-              <p className="text-gray-600">
+              <p className="text-lg text-gray-600">
                 Manage your reward points and view transaction history
               </p>
             </div>
@@ -75,20 +90,23 @@ export function Wallet() {
           </div>
         </motion.div>
 
-        {/* Points Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Points Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Total Points */}
           <motion.div
-            className="glass-card p-6"
+            className="glass-card-premium p-6 hover-lift"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Total Points</h2>
-              <WalletIcon className="w-6 h-6 text-tea-amber" />
+              <h2 className="text-lg font-bold text-gray-900">Total Points</h2>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-tea-400 to-tea-600 flex items-center justify-center shadow-lg">
+                <WalletIcon className="w-6 h-6 text-white" />
+              </div>
             </div>
             
-            <div className="text-3xl font-bold text-gray-900 mb-2">
+            <div className="text-4xl font-bold text-gray-900 mb-2">
               {user.points.toLocaleString()}
             </div>
             
@@ -97,31 +115,69 @@ export function Wallet() {
             </div>
           </motion.div>
 
+          {/* Withdrawable Points */}
           <motion.div
-            className="glass-card p-6"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            className="glass-card-premium p-6 hover-lift relative overflow-hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Status</h2>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-200 to-emerald-200 rounded-full filter blur-3xl opacity-30"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900">Withdrawable</h2>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
+                  canWithdraw 
+                    ? 'bg-gradient-to-br from-green-400 to-emerald-600' 
+                    : 'bg-gradient-to-br from-gray-300 to-gray-500'
+                }`}>
+                  {canWithdraw ? (
+                    <Unlock className="w-6 h-6 text-white" />
+                  ) : (
+                    <Lock className="w-6 h-6 text-white" />
+                  )}
+                </div>
+              </div>
+              
+              <div className="text-4xl font-bold text-gray-900 mb-2">
+                {withdrawablePoints.toLocaleString()}
+              </div>
+              
               {canWithdraw ? (
-                <Unlock className="w-6 h-6 text-green-600" />
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Ready to withdraw
+                </div>
               ) : (
-                <Lock className="w-6 h-6 text-tea-brown" />
+                <div className="text-sm text-gray-600">
+                  Unlock at 50,000 points
+                </div>
               )}
             </div>
+          </motion.div>
+
+          {/* Locked Points */}
+          <motion.div
+            className="glass-card-premium p-6 hover-lift"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Status</h2>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-premium-400 to-premium-600 flex items-center justify-center shadow-lg">
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
+            </div>
             
-            <div className={`text-lg font-semibold mb-2 ${
-              canWithdraw ? 'text-green-600' : 'text-tea-brown'
-            }`}>
-              {canWithdraw ? 'Unlocked' : 'Locked'}
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              {lockedPoints.toLocaleString()}
             </div>
             
             <div className="text-sm text-gray-600">
               {canWithdraw 
-                ? 'You can withdraw your points now!'
-                : `Unlock at 50,000 points (${(50000 - user.points).toLocaleString()} to go)`
+                ? 'All points unlocked'
+                : `${(50000 - user.points).toLocaleString()} more to unlock`
               }
             </div>
           </motion.div>
@@ -195,70 +251,231 @@ export function Wallet() {
             <div className="text-sm text-yellow-700 mt-3">You have an open withdrawal request. You cannot submit another until it is processed.</div>
           )}
 
-          {showWithdrawModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-              <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                <h3 className="text-lg font-semibold mb-3">Request Withdrawal</h3>
-                <p className="text-sm text-gray-600 mb-4">Requested points will remain in your account until an admin accepts and confirms the withdrawal.</p>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Points to withdraw</label>
-                  <input type="number" min="1" max={withdrawablePoints} value={withdrawPointsInput} onChange={e => setWithdrawPointsInput(Number(e.target.value || 0))} className="w-full px-3 py-2 border rounded" />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <button onClick={() => { setShowWithdrawModal(false); }} className="px-4 py-2 rounded border">Cancel</button>
-                  <button onClick={async () => {
-                    const pts = Number(withdrawPointsInput) || 0;
-                    if (pts <= 0 || pts > withdrawablePoints) { addNotification({ id: Date.now(), text: 'Enter a valid withdraw amount' }); return; }
-                    setIsSubmittingWithdrawal(true);
-                    try {
-                      const res = await fetch('/api/rewards/withdrawals/request', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ points: pts }) });
-                      const body = await res.json().catch(() => ({}));
-                      if (!res.ok) {
-                        addNotification({ id: Date.now(), text: body?.message || 'Failed to create withdrawal request' });
-                        setIsSubmittingWithdrawal(false);
-                        return;
-                      }
-                      addNotification({ id: Date.now(), text: 'Withdrawal request created and is pending admin approval' });
-                      // refresh user's withdrawal list immediately
-                      try { fetchUserWithdrawals(); } catch (e) { /* ignore */ }
-                      setShowWithdrawModal(false);
-                    } catch (e) {
-                      console.error('Withdraw request error', e);
-                      addNotification({ id: Date.now(), text: 'Network error' });
-                    } finally { setIsSubmittingWithdrawal(false); }
-                  }} className="px-4 py-2 rounded bg-amber-500 text-white" disabled={isSubmittingWithdrawal}>{isSubmittingWithdrawal ? 'Requesting…' : 'Request Withdrawal'}</button>
-                </div>
+          <AnimatePresence>
+            {showWithdrawModal && (
+              <motion.div 
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowWithdrawModal(false)}
+              >
+                <motion.div 
+                  className="glass-card-premium p-8 w-full max-w-md m-4 relative"
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Close button */}
+                  <button 
+                    onClick={() => setShowWithdrawModal(false)}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+
+                  {/* Header */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
+                      <DollarSign className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Request Withdrawal</h3>
+                      <p className="text-sm text-gray-600">Convert your points to cash</p>
+                    </div>
+                  </div>
+
+                  {/* Info Message */}
+                  <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      Requested points will remain in your account until an admin accepts and confirms the withdrawal.
+                    </p>
+                  </div>
+
+                  {/* Available Balance */}
+                  <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-tea-50 to-premium-50 border border-tea-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 font-medium">Available Balance</span>
+                      <span className="text-2xl font-bold text-tea-700">
+                        {withdrawablePoints.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Input Field */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Points to withdraw
+                    </label>
+                    <div className="relative">
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max={withdrawablePoints} 
+                        value={withdrawPointsInput} 
+                        onChange={e => setWithdrawPointsInput(Number(e.target.value || 0))} 
+                        className="input-field w-full pr-20"
+                        placeholder="Enter amount"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setWithdrawPointsInput(withdrawablePoints)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-tea-100 text-tea-700 text-sm font-medium hover:bg-tea-200 transition-colors"
+                      >
+                        Max
+                      </button>
+                    </div>
+                    {withdrawPointsInput > 0 && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        Request: <span className="font-semibold text-gray-900">{withdrawPointsInput.toLocaleString()} points</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <SecondaryButton 
+                      onClick={() => setShowWithdrawModal(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </SecondaryButton>
+                    <PrimaryButton
+                      onClick={async () => {
+                        const pts = Number(withdrawPointsInput) || 0;
+                        if (pts <= 0 || pts > withdrawablePoints) { 
+                          addNotification({ id: Date.now(), text: 'Enter a valid withdraw amount' }); 
+                          return; 
+                        }
+                        setIsSubmittingWithdrawal(true);
+                        try {
+                          const res = await fetch('/api/rewards/withdrawals/request', { 
+                            method: 'POST', 
+                            credentials: 'include', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify({ points: pts }) 
+                          });
+                          const body = await res.json().catch(() => ({}));
+                          if (!res.ok) {
+                            addNotification({ id: Date.now(), text: body?.message || 'Failed to create withdrawal request' });
+                            setIsSubmittingWithdrawal(false);
+                            return;
+                          }
+                          addNotification({ id: Date.now(), text: 'Withdrawal request created and is pending admin approval' });
+                          try { fetchUserWithdrawals(); } catch (e) { /* ignore */ }
+                          setShowWithdrawModal(false);
+                        } catch (e) {
+                          console.error('Withdraw request error', e);
+                          addNotification({ id: Date.now(), text: 'Network error' });
+                        } finally { 
+                          setIsSubmittingWithdrawal(false); 
+                        }
+                      }}
+                      disabled={isSubmittingWithdrawal}
+                      className="flex-1"
+                    >
+                      {isSubmittingWithdrawal ? (
+                        <span className="flex items-center gap-2">
+                          <motion.div 
+                            className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          />
+                          Requesting...
+                        </span>
+                      ) : (
+                        'Request Withdrawal'
+                      )}
+                    </PrimaryButton>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* User's withdrawal requests */}
+          <motion.div 
+            className="mt-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Your Withdrawal Requests</h3>
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-tea-100 text-tea-700 text-sm font-medium">
+                {(userWithdrawals || []).length} total
               </div>
             </div>
-          )}
-          {/* User's withdrawal requests */}
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-3">Your Withdrawal Requests</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 px-3">Requested At</th>
-                    <th className="text-left py-2 px-3">Points</th>
-                    <th className="text-left py-2 px-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(userWithdrawals || []).length === 0 ? (
-                    <tr><td className="py-3 px-3" colSpan={3}>No withdrawal requests.</td></tr>
-                  ) : (
-                    (userWithdrawals || []).map(w => (
-                      <tr key={w._id} className="border-b hover:bg-gray-50">
-                        <td className="py-2 px-3">{new Date(w.requestedAt).toLocaleString()}</td>
-                        <td className="py-2 px-3">{(w.requestedPoints || 0).toLocaleString()}</td>
-                        <td className="py-2 px-3">{w.status}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            
+            {(userWithdrawals || []).length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Clock className="w-8 h-8 text-gray-400" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">No withdrawal requests yet</h4>
+                <p className="text-gray-600">Your withdrawal requests will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(userWithdrawals || []).map((w, idx) => (
+                  <motion.div
+                    key={w._id}
+                    className="glass-card p-4 hover:shadow-lg transition-all"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                          w.status === 'accepted' 
+                            ? 'bg-green-100' 
+                            : w.status === 'pending' 
+                            ? 'bg-yellow-100' 
+                            : 'bg-red-100'
+                        }`}>
+                          {w.status === 'accepted' ? (
+                            <CheckCircle className="w-6 h-6 text-green-600" />
+                          ) : w.status === 'pending' ? (
+                            <Clock className="w-6 h-6 text-yellow-600" />
+                          ) : (
+                            <X className="w-6 h-6 text-red-600" />
+                          )}
+                        </div>
+                        
+                        <div>
+                          <div className="text-sm text-gray-500 mb-1">
+                            {new Date(w.requestedAt).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'short', 
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                          <div className="text-lg font-bold text-gray-900">
+                            {(w.requestedPoints || 0).toLocaleString()} points
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          w.status === 'accepted' 
+                            ? 'bg-green-100 text-green-700' 
+                            : w.status === 'pending' 
+                            ? 'bg-yellow-100 text-yellow-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {w.status.charAt(0).toUpperCase() + w.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
         </motion.div>
 
         {/* Transaction history removed per request */}

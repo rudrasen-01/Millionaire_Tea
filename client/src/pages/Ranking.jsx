@@ -93,16 +93,16 @@ export function Ranking() {
         {/* Header */}
         <motion.div 
           className="mb-8"
-          initial={{ y: -20 }}
-          animate={{ y: 0 }}
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
                 🏆 Leaderboard
               </h1>
-              <p className="text-gray-600">
+              <p className="text-lg text-gray-600">
                 See how you rank among other tea enthusiasts
               </p>
             </div>
@@ -111,25 +111,38 @@ export function Ranking() {
             </SecondaryButton>
           </div>
 
-          {/* Current User Stats */}
-          <div className="glass-card p-6 bg-gradient-to-r from-tea-amber/10 to-tea-brown/10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <img 
-                  src={user.avatar} 
-                  alt={user.name}
-                  className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
-                />
+          {/* Current User Stats Card */}
+          <div className="glass-card-premium p-6 bg-gradient-to-r from-tea-50/50 to-premium-50/50 border-2 border-tea-200">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img 
+                    src={user.avatar} 
+                    alt={user.name}
+                    className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg object-cover"
+                  />
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-gradient-to-br from-luxury-gold to-tea-600 flex items-center justify-center shadow-lg">
+                    <Crown className="w-4 h-4 text-white" />
+                  </div>
+                </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Your Position</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-1">Your Position</h3>
                   <p className="text-gray-600">
-                    Rank {user.rank ?? user.rankPosition ?? '-'} with {user.points.toLocaleString()} points
+                    <span className="font-bold text-tea-700">Rank #{user.rank ?? user.rankPosition ?? '-'}</span> with <span className="font-semibold">{user.points.toLocaleString()}</span> points
                   </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-tea-100 text-tea-700 text-xs font-medium">
+                      {user.teasConsumed} teas consumed
+                    </span>
+                  </div>
                 </div>
               </div>
               
-              <div className="text-right">
-                <div className="text-3xl font-bold text-tea-brown">{user.rank ?? user.rankPosition ?? '-'}</div>
+              <div className="text-center">
+                <div className="text-5xl font-extrabold gradient-text mb-1">
+                  #{user.rank ?? user.rankPosition ?? '-'}
+                </div>
+                <div className="text-sm text-gray-600">Your Rank</div>
               </div>
             </div>
           </div>

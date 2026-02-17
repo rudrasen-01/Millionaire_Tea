@@ -60,6 +60,12 @@ function appReducer(state, action) {
         notifications: [action.payload, ...state.notifications]
       };
     
+    case 'REMOVE_NOTIFICATION':
+      return {
+        ...state,
+        notifications: state.notifications.filter(n => n.id !== action.payload)
+      };
+    
     case 'SHOW_TOOLTIP':
       return { ...state, showTooltip: action.payload };
 
@@ -273,6 +279,7 @@ export function AppProvider({ children }) {
     addRewardHistory: (history) => dispatch({ type: 'ADD_REWARD_HISTORY', payload: history }),
     updateMilestone: (milestone) => dispatch({ type: 'UPDATE_MILESTONE', payload: milestone }),
     addNotification: (notification) => dispatch({ type: 'ADD_NOTIFICATION', payload: notification }),
+    removeNotification: (id) => dispatch({ type: 'REMOVE_NOTIFICATION', payload: id }),
     showTooltip: (show) => dispatch({ type: 'SHOW_TOOLTIP', payload: show }),
     claimPrize: () => dispatch({ type: 'CLAIM_PRIZE' })
   };

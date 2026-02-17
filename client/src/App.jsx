@@ -33,6 +33,8 @@ import { Register } from './pages/Register';
 import { Login } from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { IconButton } from './components/buttons/PrimaryButton';
+import { ToastContainer } from './components/notifications/Toast';
+import { ScrollToTop } from './components/buttons/ScrollToTop';
 
 function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobileMenuOpen }) {
   const { user, setUser } = useApp();
@@ -328,7 +330,7 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
 }
 
 function AppContent() {
-  const { currentPage, setCurrentPage, isLoading, user } = useApp();
+  const { currentPage, setCurrentPage, isLoading, user, notifications, removeNotification } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLanding, setShowLanding] = useState(false);
 
@@ -408,6 +410,8 @@ function AppContent() {
 
   return (
     <div style={{ minHeight: '100vh' }}>
+      <ToastContainer notifications={notifications} onRemove={removeNotification} />
+      <ScrollToTop />
       <div className="lg:flex">
         <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
