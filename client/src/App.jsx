@@ -169,6 +169,7 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                             )}
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          {/* notifications UI removed per admin preference */}
                           {user.isVip && (
                             <Crown style={{ width: '1.25rem', height: '1.25rem', color: '#EAB308' }} />
                           )}
@@ -376,7 +377,7 @@ function AppContent() {
     setShowLanding(false);
     setCurrentPage('panel-select');
   };
-
+ 
   if (isLoading) {
     return (
       <div style={{ 

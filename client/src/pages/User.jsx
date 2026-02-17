@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User as UserIcon, Search, Eye } from 'lucide-react';
 import { PrimaryButton, IconButton } from '../components/buttons/PrimaryButton';
@@ -8,6 +8,24 @@ import { useApp } from '../context/AppContext';
 export function User() {
   const { user, adminKPIs, isLoading, setCurrentPage, setUser, addNotification } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!mounted) return;
+        if (res.ok) {
+          const d = await res.json();
+          try { console.debug('[User.jsx] /api/auth/me ->', d); } catch(e){}
+          if (d?.user) setUser(d.user);
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [setUser]);
 
   const handleClaim = async () => {
     if (!user) return;
@@ -77,6 +95,8 @@ export function User() {
             </div>
           </div>
         </div>
+
+        {/* Notifications removed per admin preference */}
 
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">

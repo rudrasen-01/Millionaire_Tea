@@ -405,6 +405,8 @@ router.get('/dashboard', auth, async (req, res, next) => {
     // exclude admins from dashboard top list
     const topUsers = await User.find({ role: 'user' }).sort({ rankPosition: 1 }).limit(10).select('name points rankPosition claimableRewards profileImage');
     const totalUsers = await User.countDocuments({ role: 'user' });
+    // include awards issued count for admin KPIs
+    const awardsCount = await Awards.countDocuments();
     const top = topUsers.map(u => ({
       id: u._id,
       name: u.name,
@@ -413,7 +415,7 @@ router.get('/dashboard', auth, async (req, res, next) => {
       claimableRewards: u.claimableRewards || 0,
       avatar: u.profileImage || null
     }));
-    return res.json({ admin: { ...cfg.toObject(), totalUsers }, top });
+    return res.json({ admin: { ...cfg.toObject(), totalUsers, rewardsIssued: awardsCount }, top });
   } catch (err) {
     return next(err);
   }

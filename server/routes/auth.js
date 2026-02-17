@@ -188,7 +188,8 @@ router.get('/me', auth, async (req, res) => {
         teasConsumed: user.teasConsumed || 0,
         profileImage: user.profileImage,
         avatar: user.profileImage || null,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        notifications: (user.notifications || []).slice().reverse()
       }
     });
 

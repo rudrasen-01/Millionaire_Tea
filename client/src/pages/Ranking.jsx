@@ -290,7 +290,7 @@ export function Ranking() {
         >
           <h2 className="text-xl font-bold text-gray-900 mb-6">All Rankings</h2>
           
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-hidden">
             <AnimatePresence>
               {filteredAndSortedUsers.map((rankUser, index) => (
                 <RankCard
