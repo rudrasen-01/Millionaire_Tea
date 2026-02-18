@@ -5,8 +5,14 @@ import { PrimaryButton, IconButton } from '../components/buttons/PrimaryButton';
 import { KPICard } from '../components/charts/ProgressChart';
 import { useApp } from '../context/AppContext';
 
+function formatDate(d) {
+  const dt = new Date(d);
+  const pad = (v) => String(v).padStart(2, '0');
+  return `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}/${dt.getFullYear()} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+
 export function User() {
-  const { user, adminKPIs, isLoading, setCurrentPage, setUser, addNotification } = useApp();
+  const { user, adminKPIs, isLoading, setCurrentPage, setUser, addNotification, notifications } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -96,7 +102,31 @@ export function User() {
           </div>
         </div>
 
-        {/* Notifications removed per admin preference */}
+        {/* Notifications */}
+        <div className="glass-card p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Notifications</h2>
+          </div>
+          {user && notifications && notifications.length === 0 && (
+            <div className="text-sm text-gray-500">No notifications</div>
+          )}
+          <div className="space-y-3">
+            {notifications && notifications.map((n) => (
+              <div key={n.id || n._id} className={`p-3 border rounded-md bg-white ${n.read ? 'opacity-60' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-gray-800">{n.message || n.text}</div>
+                    <div className="text-xs text-gray-500">Points added: {typeof n.rewardPointsAdded === 'number' ? `+${n.rewardPointsAdded}` : '-'} • Total: {typeof n.totalPoints === 'number' ? n.totalPoints : '-'}</div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="text-xs text-gray-400">{n.createdAt ? formatDate(n.createdAt) : ''}</div>
+                    <div className="mt-2 text-xs text-gray-400">{n.read ? 'Read' : ''}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">

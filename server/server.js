@@ -13,6 +13,7 @@ const reviewsRoutes = require('./routes/reviews');
 const debugRoutes = require('./routes/debug');
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const AdminConfig = require('./models/AdminConfig');
 const requestLogger = require('./middleware/requestLogger');
 
@@ -57,7 +58,7 @@ app.use((err, req, res, next) => {
 
 async function start() {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/tea-rewards';
+    const mongoUri = process.env.MONGO_URI;
     await mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('Connected to MongoDB');
     // Seed admin user if ADMIN_EMAIL and ADMIN_PASSWORD provided
@@ -104,6 +105,38 @@ async function start() {
     app.set('io', io);
     io.on('connection', (socket) => {
       console.log('Socket connected', socket.id);
+      try {
+        // try to read auth token from cookies sent in the handshake
+        const cookie = socket.handshake.headers && socket.handshake.headers.cookie;
+        if (cookie) {
+          const match = cookie.split(';').map(s => s.trim()).find(s => s.startsWith('token='));
+          if (match) {
+            const token = match.replace('token=', '');
+            try {
+              const decoded = jwt.verify(token, process.env.JWT_SECRET);
+              if (decoded && decoded.id) {
+                // join a room for this user id so server can target emits
+                socket.join(String(decoded.id));
+                try { console.log('Socket %s joined room user:%s', socket.id, String(decoded.id)); } catch (e) { /* ignore */ }
+                // also join admins room if this user is an admin
+                (async () => {
+                  try {
+                    const u = await User.findById(decoded.id).select('role');
+                    if (u && (u.role === 'admin' || u.role === 'superadmin')) {
+                      socket.join('admins');
+                      try { console.log('Socket %s joined room admins (user %s)', socket.id, String(decoded.id)); } catch (e) { /* ignore */ }
+                    }
+                  } catch (e) { /* ignore */ }
+                })();
+              }
+            } catch (e) {
+              // invalid token — ignore and continue as anonymous socket
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Socket auth parsing error', e);
+      }
       socket.on('disconnect', () => console.log('Socket disconnected', socket.id));
     });
 

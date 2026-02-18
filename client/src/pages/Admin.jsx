@@ -778,7 +778,8 @@ export function Admin({ initialTab }) {
                       setIsSubmittingTeas(false);
                       return;
                     }
-                    addNotification({ id: Date.now(), text: `Updated: +${body.teasAdded} teas, +${body.pointsAdded} points` });
+                    // Do not add detailed user notification here in admin UI.
+                    // The server emits a concise `admin:notificationSent` event to admins.
                     // refresh rankings and admin KPIs
                     const [ranksRes, dashRes] = await Promise.all([
                       fetch('/api/rewards/rankings'),

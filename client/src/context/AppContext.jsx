@@ -59,6 +59,22 @@ function appReducer(state, action) {
         ...state,
         notifications: [action.payload, ...state.notifications]
       };
+    case 'SET_NOTIFICATIONS':
+      return { ...state, notifications: action.payload };
+    case 'TAG_ADMIN_CONFIRMATIONS':
+      return {
+        ...state,
+        notifications: state.notifications.map(n => {
+          const txt = (n.message || n.text || '').toString();
+          if (txt.startsWith(action.payload.prefix)) return { ...n, adminConfirmation: true };
+          return n;
+        })
+      };
+    case 'MARK_NOTIFICATION_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(n => n.id === action.payload || n._id === action.payload ? { ...n, read: true } : n)
+      };
     
     case 'SHOW_TOOLTIP':
       return { ...state, showTooltip: action.payload };
@@ -186,6 +202,53 @@ export function AppProvider({ children }) {
     return () => clearInterval(id);
   }, []);
 
+  // fetch user notifications when user becomes available
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch('/api/rewards/notifications', { credentials: 'include' });
+      if (res && res.ok) {
+        const b = await res.json();
+        let notifs = (b.notifications || []).map(n => ({ ...n, id: n._id || n.id }));
+        // if current user is admin, also fetch persisted admin notifications
+        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          try {
+            const ares = await fetch('/api/rewards/admin/notifications', { credentials: 'include' });
+            if (ares && ares.ok) {
+              const ab = await ares.json();
+              const adminNotifs = (ab.notifications || []).map(n => ({ ...n, id: n._id || n.id, adminNotification: true }));
+              // merge admin notifications before user notifications so they appear on top
+              notifs = [...adminNotifs, ...notifs];
+            }
+          } catch (e) { /* ignore admin fetch errors */ }
+        }
+        dispatch({ type: 'SET_NOTIFICATIONS', payload: notifs });
+        // tag any admin confirmation messages so UI hides the 'Read' label and points line
+        dispatch({ type: 'TAG_ADMIN_CONFIRMATIONS', payload: { prefix: 'Notification sent to' } });
+      }
+    } catch (e) {
+      console.error('Failed to fetch notifications', e);
+    }
+  };
+
+  useEffect(() => {
+    if (state.user) fetchNotifications();
+  }, [state.user]);
+
+  const markNotificationRead = async (id) => {
+    try {
+      dispatch({ type: 'MARK_NOTIFICATION_READ', payload: id });
+      // determine if this is an admin notification
+      const current = state.notifications.find(n => String(n.id || n._id) === String(id));
+      if (current && current.adminNotification) {
+        await fetch(`/api/rewards/admin/notifications/${id}/read`, { method: 'POST', credentials: 'include' });
+      } else {
+        await fetch(`/api/rewards/notifications/${id}/read`, { method: 'POST', credentials: 'include' });
+      }
+    } catch (e) {
+      console.error('Failed to mark notification read', e);
+    }
+  };
+
   useEffect(() => {
     const onRanks = (e) => {
       if (e?.detail) dispatch({ type: 'SET_ALL_USERS', payload: e.detail });
@@ -206,55 +269,147 @@ export function AppProvider({ children }) {
         dispatch({ type: 'UPDATE_USER_POINTS', payload: payload.user.points - (state.user.points || 0) });
         dispatch({ type: 'UPDATE_USER_RANK', payload: payload.user.rankPosition });
       }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Dashboard updated' } });
+      // intentionally not adding a generic notification here to avoid empty/placeholder messages
     });
     socket.on('withdrawal:created', (payload) => {
-      // if the event belongs to the current user, refresh their withdrawals
-      try { if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals(); } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Withdrawal request created' } });
+      try {
+        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          // notify the requesting user and refresh their withdrawals
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Your withdrawal request was created' } });
+        }
+        // admins should receive a brief admin notification about new withdrawal requests
+        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'New withdrawal request' } });
+        }
+      } catch (e) { /* ignore */ }
     });
     socket.on('withdrawal:accepted', (payload) => {
       try {
-        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
-        // if current user is admin, refresh admin list
-        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
+        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Your withdrawal request was accepted' } });
+        }
+        // do not add a generic notification for admins here to avoid noise
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'A withdrawal request was accepted' } });
     });
     socket.on('withdrawal:confirmed', (payload) => {
       try {
-        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
-        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
+        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Your withdrawal was confirmed' } });
+        }
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'A withdrawal was confirmed' } });
     });
     socket.on('withdrawal:paid', (payload) => {
       try {
-        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
-        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
+        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Your withdrawal was marked paid' } });
+        }
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'A withdrawal was marked paid' } });
     });
     socket.on('reward:transferred', (info) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: `Reward transferred: ${info.amount}` } });
-      // If current user is admin, refresh admin awards and notify admin UI listeners
-      (async () => {
-        try {
-          if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
-            const res = await fetch('/api/rewards/admin/awards', { credentials: 'include' });
-            if (res && res.ok) {
-              const b = await res.json();
-              try { window.dispatchEvent(new CustomEvent('app:awardsUpdated', { detail: b.awards || [] })); } catch (e) { /* ignore */ }
+      try {
+        // notify only the winner (if it's the current user)
+        if (state.user && String(info.winnerId) === String(state.user._id || state.user.id)) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: `Reward transferred: ${info.amount}` } });
+        }
+        // If current user is admin, refresh admin awards and notify admin UI listeners
+        (async () => {
+          try {
+            if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+              const res = await fetch('/api/rewards/admin/awards', { credentials: 'include' });
+              if (res && res.ok) {
+                const b = await res.json();
+                try { window.dispatchEvent(new CustomEvent('app:awardsUpdated', { detail: b.awards || [] })); } catch (e) { /* ignore */ }
+              }
             }
+          } catch (e) { /* ignore */ }
+        })();
+      } catch (e) { /* ignore */ }
+    });
+    socket.on('user:notification', (notif) => {
+      try {
+        if (!notif) return;
+        // if notification is targeted to current user, add it
+        if (state.user && String(notif.userId) === String(state.user._id || state.user.id)) {
+          const payload = {
+            id: Date.now(),
+            message: notif.message || notif.text || 'Notification',
+            quantity: notif.quantity,
+            rewardPointsAdded: notif.rewardPointsAdded,
+            totalPoints: notif.totalPoints,
+            createdAt: notif.createdAt || new Date().toISOString()
+          };
+          dispatch({ type: 'ADD_NOTIFICATION', payload });
+          // also update user points if present
+          if (typeof notif.totalPoints === 'number') {
+            dispatch({ type: 'SET_USER', payload: { ...state.user, points: notif.totalPoints } });
           }
-        } catch (e) { /* ignore */ }
-      })();
+        }
+      } catch (e) { /* ignore */ }
     });
     socket.on('user:claimed', (info) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: `User claimed ${info.amount}` } });
+      try {
+        // notify only the affected user
+        if (state.user && String(info.userId) === String(state.user._id || state.user.id)) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: `Your claim processed: ${info.amount}` } });
+        }
+      } catch (e) { /* ignore */ }
     });
+
     socket.on('admin:configUpdated', (cfg) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Admin config updated' } });
+      try {
+        // only admins should get admin config update notifications
+        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Admin config updated' } });
+        }
+      } catch (e) { /* ignore */ }
+    });
+
+    // admin-specific events initiated by server
+    socket.on('admin:newUser', (u) => {
+      try {
+        // admin:newUser is emitted as a lightweight alert; the server also emits a persisted `admin:notification` which will be shown in the admin notifications list
+        // no client-side local notification added here to avoid duplication
+      } catch (e) { /* ignore */ }
+    });
+
+    socket.on('admin:newReview', (r) => {
+      try {
+        // server will emit a persisted `admin:notification`; skip creating a local one here to avoid duplicates
+      } catch (e) { /* ignore */ }
+    });
+    
+    socket.on('admin:notificationSent', (p) => {
+      try {
+        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          // ignore confirmations that were triggered by the current admin
+          if (p && p.actorId && String(p.actorId) === String(state.user._id || state.user.id)) return;
+          const text = p && p.userName ? `Notification sent to ${p.userName}` : 'Notification sent to user';
+          // mark as adminConfirmation so the UI can render it differently (no "Read" label)
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text, adminConfirmation: true } });
+          // also tag any existing notifications with the same text (e.g. from earlier fetch) so they render as admin confirmations
+          dispatch({ type: 'TAG_ADMIN_CONFIRMATIONS', payload: { prefix: 'Notification sent to' } });
+        }
+      } catch (e) { /* ignore */ }
+    });
+
+    socket.on('admin:notification', (n) => {
+      try {
+        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          const payload = {
+            id: n._id || n.id || Date.now(),
+            message: n.message || n.msg || '',
+            createdAt: n.createdAt || new Date().toISOString(),
+            adminNotification: true,
+            read: !!n.read,
+            details: n.details || {}
+          };
+          dispatch({ type: 'ADD_NOTIFICATION', payload });
+        }
+      } catch (e) { /* ignore */ }
     });
 
     return () => {
@@ -267,6 +422,8 @@ export function AppProvider({ children }) {
     ...state,
     dispatch,
     fetchUserWithdrawals,
+    fetchNotifications,
+    markNotificationRead,
     setUser: (user) => dispatch({ type: 'SET_USER', payload: user }),
     updateUserPoints: (points) => dispatch({ type: 'UPDATE_USER_POINTS', payload: points }),
     setCurrentPage: (page) => dispatch({ type: 'SET_PAGE', payload: page }),

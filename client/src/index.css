@@ -81,6 +81,12 @@ body {
   border: 2px solid #FF9933;
 }
 
+/* Ensure rank-1 keeps its gradient on hover (override .glass-card:hover) */
+.rank-1:hover {
+  background: linear-gradient(to right, #FF9933, #FF8C00, #FF9933);
+  color: white;
+}
+
 .premium-gradient {
   background: linear-gradient(135deg, #FF9933 0%, #FF8C00 50%, #FF6B35 100%);
 }

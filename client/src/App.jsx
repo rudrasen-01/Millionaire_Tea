@@ -10,6 +10,7 @@ import {
   X, 
   Coffee,
   Star,
+  Bell,
   MessageSquare,
   LogOut,
   ArrowLeft,
@@ -27,6 +28,7 @@ import { Wallet as WalletPage } from './pages/Wallet';
 import { Ranking } from './pages/Ranking';
 import { Admin } from './pages/Admin';
 import { User } from './pages/User';
+import Notifications from './pages/Notifications';
 import { PanelSelector } from './pages/PanelSelector';
 import { LandingPage } from './pages/LandingPage';
 import { Register } from './pages/Register';
@@ -329,9 +331,11 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
 }
 
 function AppContent() {
-  const { currentPage, setCurrentPage, isLoading, user } = useApp();
+  const { currentPage, setCurrentPage, isLoading, user, notifications, markNotificationRead } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLanding, setShowLanding] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [expandedNotifs, setExpandedNotifs] = useState(new Set());
 
   // If a logged-in user arrives and `currentPage` is left as 'panel-select',
   // force it to the appropriate dashboard so they don't see the selector.
@@ -356,6 +360,8 @@ function AppContent() {
         return <Dashboard />;
       case 'reviews':
         return <Reviews />;
+      case 'notifications':
+        return <Notifications />;
       case 'user':
         return <User />;
       
@@ -376,6 +382,26 @@ function AppContent() {
   const handleGetStarted = () => {
     setShowLanding(false);
     setCurrentPage('panel-select');
+  };
+
+  function formatDate(d) {
+    const dt = new Date(d);
+    const pad = (v) => String(v).padStart(2, '0');
+    return `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}/${dt.getFullYear()} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+  }
+
+  const unreadCount = (notifications || []).filter(n => !n.read).length;
+
+  const openNotifications = async () => {
+    setIsNotifOpen(v => !v);
+    // if opening, mark unread as read (optimistic)
+    if (!isNotifOpen && notifications && notifications.length) {
+      for (const n of notifications) {
+        if (!n.read) {
+          try { await markNotificationRead(n.id || n._id); } catch (e) { /* ignore */ }
+        }
+      }
+    }
   };
  
   if (isLoading) {
@@ -464,19 +490,89 @@ function AppContent() {
               </div>
             </div>
 
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-3"
-              style={{
-                padding: '0.5rem',
-                borderRadius: '0.5rem',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <Menu style={{ width: '1.5rem', height: '1.5rem', color: '#6B7280' }} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ position: 'relative' }}>
+                <button onClick={openNotifications} title="Notifications" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
+                  <Bell style={{ width: '1.25rem', height: '1.25rem', color: 'white' }} />
+                </button>
+                {unreadCount > 0 && (
+                  <div style={{ position: 'absolute', top: 2, right: 2, background: '#ef4444', color: 'white', borderRadius: '999px', padding: '0 6px', fontSize: '11px', lineHeight: '18px' }}>{unreadCount}</div>
+                )}
+                {isNotifOpen && (
+                  <div className="absolute right-0 mt-12 w-80 bg-white rounded-lg shadow-lg ring-1 ring-black/5 z-60">
+                    <div className="flex items-center justify-between px-4 py-2 border-b">
+                      <div className="text-sm font-medium">Notifications</div>
+                      <div className="flex items-center space-x-2">
+                        <button className="text-xs text-gray-400 hover:text-gray-600" onClick={() => setIsNotifOpen(false)}>Close</button>
+                      </div>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {(notifications || []).slice().sort((a,b) => (a.read === b.read) ? new Date(b.createdAt) - new Date(a.createdAt) : (a.read ? 1 : -1)).map(n => {
+                        const id = n.id || n._id;
+                        const isExpanded = expandedNotifs.has(id);
+                        const fullTextRaw = n.message || n.text || '';
+                        const fullText = (fullTextRaw || '').replace(/\s+/g, ' ').trim();
+                        const teaUpdatePhrase = 'Your tea purchase has been updated';
+                        let preview = '';
+                        if (fullText.toLowerCase().includes(teaUpdatePhrase.toLowerCase())) {
+                          preview = teaUpdatePhrase;
+                        } else {
+                          preview = fullText.split(/[\.\n]/)[0].trim() || '';
+                          if (!preview) preview = fullText.slice(0, 80) + (fullText.length > 80 ? '...' : '');
+                        }
+                        const long = fullText.length > preview.length;
+                        return (
+                        <div key={id} className={`flex items-start px-4 py-3 gap-3 ${n.read ? 'bg-gray-50' : 'bg-white'}`}>
+                          <div className="w-9 h-9 rounded-md bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-semibold">☕</div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between">
+                              <div className="text-sm text-gray-900">{isExpanded ? (n.message || n.text) : preview + (long ? '…' : '')}</div>
+                              <div className="text-xs text-gray-400 ml-2">{n.createdAt ? formatDate(n.createdAt) : ''}</div>
+                            </div>
+                            <div className="mt-1 flex items-center justify-between">
+                              {(() => {
+                                const msg = (n.message || n.text || '').toString().toLowerCase();
+                                const isReview = (n.action && n.action.toString().startsWith('review')) || (n.details && n.details.action && n.details.action.toString().startsWith('review')) || msg.includes('review');
+                                const showPoints = !(n.adminNotification || isReview);
+                                return (
+                                  <div className="text-xs text-gray-500">{showPoints ? `Points: ${typeof n.rewardPointsAdded === 'number' ? `+${n.rewardPointsAdded}` : '-' } • Total: ${typeof n.totalPoints === 'number' ? n.totalPoints : '-' }` : ''}</div>
+                                );
+                              })()}
+                              {long ? (
+                                <button className="text-xs text-blue-600 hover:underline" onClick={() => {
+                                  const next = new Set(expandedNotifs);
+                                  if (isExpanded) next.delete(id); else next.add(id);
+                                  setExpandedNotifs(next);
+                                }}>{isExpanded ? 'Hide' : 'Read'}</button>
+                              ) : (
+                                <div className="text-xs text-gray-400">{n.read ? 'Read' : ''}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        );
+                      })}
+                      {(notifications || []).length === 0 && (
+                        <div className="p-4 text-sm text-gray-500">No notifications</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden p-3"
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: '0.5rem',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Menu style={{ width: '1.5rem', height: '1.5rem', color: '#6B7280' }} />
+              </button>
+            </div>
           </div>
 
           {/* Main Content */}

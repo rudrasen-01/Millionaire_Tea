@@ -6,6 +6,8 @@ const User = require('../models/User');
 const AdminConfig = require('../models/AdminConfig');
 const WithdrawalRequest = require('../models/WithdrawalRequest');
 const Transaction = require('../models/Transaction');
+const Notification = require('../models/Notification');
+const AdminNotification = require('../models/AdminNotification');
 const { auth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -22,6 +24,34 @@ const AwardSchema = new mongoose.Schema({
   reference: String
 });
 const Awards = mongoose.models.Awards || mongoose.model('Awards', AwardSchema, 'awards');
+ 
+
+// Notifications endpoints
+// GET /api/rewards/notifications - list notifications for current user
+router.get('/notifications', auth, async (req, res, next) => {
+  try {
+    const list = await Notification.find({ userId: String(req.user._id) }).sort({ createdAt: -1 }).limit(200);
+    return res.json({ notifications: list });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// POST /api/rewards/notifications/:id/read - mark notification as read
+router.post('/notifications/:id/read', auth, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid id' });
+    const notif = await Notification.findById(id);
+    if (!notif) return res.status(404).json({ message: 'Notification not found' });
+    if (String(notif.userId) !== String(req.user._id)) return res.status(403).json({ message: 'Not allowed' });
+    notif.read = true;
+    await notif.save();
+    return res.json({ ok: true });
+  } catch (err) {
+    return next(err);
+  }
+});
 
 // Admin: GET /api/admin/awards — list past awards (requires admin)
 router.get('/admin/awards', auth, requireRole('admin'), async (req, res, next) => {
@@ -29,6 +59,31 @@ router.get('/admin/awards', auth, requireRole('admin'), async (req, res, next) =
     // awards are recorded when the admin distributes the revenue pool to the top-ranked user
     const list = await Awards.find().sort({ date: -1 }).limit(100);
     return res.json({ awards: list });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Admin: GET /api/rewards/admin/notifications - list admin notifications (admin only)
+router.get('/admin/notifications', auth, requireRole('admin'), async (req, res, next) => {
+  try {
+    const list = await AdminNotification.find().sort({ createdAt: -1 }).limit(200);
+    return res.json({ notifications: list });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Admin: POST /api/rewards/admin/notifications/:id/read - mark admin notification read
+router.post('/admin/notifications/:id/read', auth, requireRole('admin'), async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid id' });
+    const notif = await AdminNotification.findById(id);
+    if (!notif) return res.status(404).json({ message: 'Notification not found' });
+    notif.read = true;
+    await notif.save();
+    return res.json({ ok: true });
   } catch (err) {
     return next(err);
   }
@@ -282,21 +337,77 @@ router.post('/admin/users/:id/add-teas', auth, requireRole('admin'), [
     const updatedUser = userDoc;
     const updatedCfg = cfgDoc;
 
-    // emit update to clients
+    // prepare notification payload and emit immediately to user (persist in background)
+    const updatedUserSafe = updatedUser; // alias for closures
+    const updatedCfgSafe = updatedCfg;
+    const now = new Date();
+    const pad = (v) => String(v).padStart(2, '0');
+    const formatted = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const notifMessage = `Your tea purchase has been updated. Quantity added: ${teas}. Points earned: ${pointsDelta}. Total points balance: ${updatedUserSafe.points}. Date & Time: ${formatted}.`;
+    const notifPayload = {
+      userId: String(updatedUserSafe._id),
+      message: notifMessage,
+      quantity: teas,
+      rewardPointsAdded: pointsDelta,
+      totalPoints: updatedUserSafe.points,
+      read: false,
+      createdAt: now
+    };
+
+    // emit update to clients immediately (fast path)
     try {
       const io = req.app.get('io');
       if (io) {
-        const u = updatedUser;
-        const c = updatedCfg;
+        const u = updatedUserSafe;
+        const c = updatedCfgSafe;
         io.emit('dashboard:update', { user: { id: u._id, points: u.points, rankPosition: u.rankPosition }, admin: { totalTeasSold: c.totalTeasSold, adminPoolMoney: c.adminPoolMoney } });
-        // optional: emit to user-specific room if joined
         try { io.to(String(u._id)).emit('user:pointsUpdated', { points: u.points, teasConsumed: u.teasConsumed }); } catch (e) { /* ignore */ }
+        try {
+          if (io) {
+            // log targeted emit for debugging
+            try { console.log('[emit] user:notification -> userId=%s (socket-targeted)', String(u._id)); } catch (e) { /* ignore logging failures */ }
+            try { io.to(String(u._id)).emit('user:notification', notifPayload); } catch (e) { /* ignore targeted emit error */ }
+            // send a short admin-only confirmation so admins see only that a notification was sent
+            try {
+              const adminMsg = {
+                userId: String(u._id),
+                userName: (u.name || ''),
+                quantity: teas,
+                pointsAdded: pointsDelta,
+                totalPoints: updatedUserSafe.points,
+                createdAt: now,
+                actorId: String(req.user?._id),
+                actorName: (req.user?.name || '')
+              };
+              io.to('admins').emit('admin:notificationSent', adminMsg);
+            } catch (e) { /* ignore */ }
+          }
+        } catch (e) { /* ignore */ }
       }
     } catch (e) {
       console.error('Socket emit error', e);
     }
 
-    return res.json({ message: 'User updated', pointsDelta, teasDelta: teas, totalsUnchanged: !!cfgDoc.salesLocked });
+    // persist cfg and notification in background without blocking response
+    (async () => {
+      try {
+        // save cfg (non-blocking for response)
+        await cfgDoc.save();
+      } catch (e) {
+        console.error('Background cfg save error', e);
+      }
+    })();
+
+    (async () => {
+      try {
+        await Notification.create(notifPayload);
+      } catch (e) {
+        console.error('Background notification save error', e);
+      }
+    })();
+
+    // return success immediately with the notification payload (not yet guaranteed persisted)
+    return res.json({ message: 'User updated', pointsDelta, pointsAdded: pointsDelta, teasDelta: teas, teasAdded: teas, totalsUnchanged: !!cfgDoc.salesLocked, notification: notifPayload, persisted: false });
   } catch (err) {
     console.error('Add-teas error', err && err.stack ? err.stack : err);
     if (process.env.NODE_ENV === 'production') {
@@ -439,7 +550,15 @@ router.post('/withdrawals/request', auth, [ body('points').isInt({ min: 1 }).toI
 
     const reqDoc = await WithdrawalRequest.create({ userId: user._id, userName: user.name || user.email || '', requestedPoints: points, status: 'pending', requestedAt: new Date(), reference: `req:${Date.now()}` });
 
-    try { const io = req.app.get('io'); if (io) io.emit('withdrawal:created', { id: reqDoc._id, userId: user._id, requestedPoints: points }); } catch (e) { /* ignore */ }
+    try {
+      const io = req.app.get('io');
+      if (io) io.emit('withdrawal:created', { id: reqDoc._id, userId: user._id, requestedPoints: points });
+    } catch (e) { /* ignore */ }
+    // persist an admin notification and emit to admins
+    try {
+      const an = await AdminNotification.create({ actorUserId: user._id, actorName: user.name || '', action: 'withdrawal:requested', message: `Withdrawal request from ${user.name || user.email || user._id}`, details: { requestId: reqDoc._id, requestedPoints: points, reference: reqDoc.reference }, createdAt: reqDoc.requestedAt });
+      try { const io2 = req.app.get('io'); if (io2) io2.to('admins').emit('admin:notification', an); } catch (e) { /* ignore */ }
+    } catch (e) { /* ignore */ }
 
     return res.json({ message: 'Withdrawal request created', request: reqDoc });
   } catch (err) {
