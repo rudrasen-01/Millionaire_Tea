@@ -87,7 +87,7 @@ export function Admin({ initialTab }) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="glass-card p-6">
+              <div key={i} className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl">
                 <SkeletonLoader height="h-6 w-32 mb-4" />
                 <SkeletonLoader height="h-8 w-24 mb-2" />
                 <SkeletonLoader height="h-4 w-16" />
@@ -95,7 +95,7 @@ export function Admin({ initialTab }) {
             ))}
           </div>
           
-          <div className="glass-card p-6">
+          <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 shadow-xl">
             <SkeletonLoader height="h-6 w-48 mb-4" />
             <TableSkeleton rows={5} />
           </div>
@@ -218,7 +218,7 @@ export function Admin({ initialTab }) {
 
   return (
     <motion.div 
-      className="min-h-screen p-6"
+      className="min-h-screen bg-gradient-to-br from-warmWhite via-cream to-beige/30 p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -233,10 +233,10 @@ export function Admin({ initialTab }) {
         >
             <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-baloo font-bold text-darkBrown mb-2 drop-shadow-sm">
                Admin Dashboard
               </h1>
-              <p className="text-gray-600">
+              <p className="text-darkBrown/70 font-semibold">
                 Manage users, rewards, and system settings
               </p>
             </div>
@@ -245,7 +245,7 @@ export function Admin({ initialTab }) {
 
         {/* Navigation Tabs */}
         <motion.div 
-          className="glass-card p-2 mb-8"
+          className="bg-gradient-to-r from-cream to-beige border-2 border-caramel/40 rounded-2xl p-2 mb-8 shadow-xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
@@ -258,11 +258,15 @@ export function Admin({ initialTab }) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${active ? 'bg-vendor-500 text-white shadow-md' : 'text-slate-700 hover:bg-vendor-50'}`}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    active 
+                      ? 'bg-gradient-to-r from-caramel to-darkBrown text-cream shadow-lg border border-beige/50' 
+                      : 'text-darkBrown hover:bg-beige/50 border border-transparent'
+                  }`}
                   aria-pressed={active}
                 >
-                  <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-slate-600'}`} />
-                  <span className={`${active ? 'font-semibold' : ''}`}>{tab.label}</span>
+                  <Icon className={`w-4 h-4 ${active ? 'text-cream' : 'text-caramel'}`} />
+                  <span className={`${active ? 'font-bold' : 'font-semibold'}`}>{tab.label}</span>
                 </button>
               );
             })}
@@ -277,19 +281,19 @@ export function Admin({ initialTab }) {
             transition={{ duration: 0.3 }}
           >
             {/* Users (embedded) on Overview - identical to Users tab */}
-            <div className="glass-card p-6 mb-6">
+            <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 mb-6 shadow-xl hover:shadow-2xl transition-all">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">User Management</h2>
+                <h2 className="text-xl font-baloo font-bold text-darkBrown">User Management</h2>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
                   <div className="relative flex-1 min-w-0">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-caramel" />
                     <input
                       type="text"
                       placeholder="Search users..."
                       value={dashboardSearch}
                       onChange={(e) => setDashboardSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-amber focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border-2 border-caramel/30 bg-warmWhite rounded-lg focus:outline-none focus:ring-2 focus:ring-caramel focus:border-caramel"
                     />
                   </div>
 
@@ -305,35 +309,35 @@ export function Admin({ initialTab }) {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">User</th>
-                      <th className="text-left py-3 px-4">Rank</th>
-                      <th className="text-left py-3 px-4">Points</th>
-                      <th className="text-left py-3 px-4">Teas</th>
-                      <th className="text-left py-3 px-4">Status</th>
-                      <th className="text-left py-3 px-4">Actions</th>
+                    <tr className="border-b-2 border-caramel/30">
+                      <th className="text-left py-3 px-4 text-darkBrown font-baloo font-bold">User</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-baloo font-bold">Rank</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-baloo font-bold">Points</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-baloo font-bold">Teas</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-baloo font-bold">Status</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-baloo font-bold">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(() => {
                       const overviewUsers = dashboardResults || [];
                       if (overviewUsers.length === 0) {
-                        return <tr><td className="py-4 px-4" colSpan={6}>{dashboardSearch.trim() ? 'No users found.' : 'Type to search users by name, email, ID or mobile.'}</td></tr>;
+                        return <tr><td className="py-4 px-4 text-darkBrown/70" colSpan={6}>{dashboardSearch.trim() ? 'No users found.' : 'Type to search users by name, email, ID or mobile.'}</td></tr>;
                       }
                       return overviewUsers.map((user, index) => (
-                        <tr key={user.id || user._id || index} className="border-b hover:bg-gray-50">
+                        <tr key={user.id || user._id || index} className="border-b border-beige/50 hover:bg-beige/30 transition-colors">
                           <td className="py-3 px-4">
                             <div className="flex items-center space-x-3">
-                              <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />
+                              <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full border-2 border-caramel/30" />
                               <div>
-                                <div className="font-medium">{user.name}</div>
-                                <div className="text-sm text-gray-600">{user.email}</div>
+                                <div className="font-semibold text-darkBrown">{user.name}</div>
+                                <div className="text-sm text-darkBrown/60">{user.email}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">{user.rank ?? user.rankPosition ?? '-'}</td>
-                          <td className="py-3 px-4">{user.points.toLocaleString()}</td>
-                          <td className="py-3 px-4">{user.teasConsumed || 0}</td>
+                          <td className="py-3 px-4 text-caramel font-semibold">{user.rank ?? user.rankPosition ?? '-'}</td>
+                          <td className="py-3 px-4 text-darkBrown font-semibold">{user.points.toLocaleString()}</td>
+                          <td className="py-3 px-4 text-caramel font-semibold">{user.teasConsumed || 0}</td>
                           <td className="py-3 px-4">
                             {(() => {
                               const st = getStatus(user);
@@ -363,49 +367,49 @@ export function Admin({ initialTab }) {
             </div>
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="rounded-md bg-white p-6 shadow-sm">
+              <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:border-caramel transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-3xl font-bold">{adminKPIs?.totalUsers ?? 0}</p>
-                    <p className="text-sm text-gray-500">Total Users</p>
+                    <p className="text-3xl font-baloo font-bold text-darkBrown">{adminKPIs?.totalUsers ?? 0}</p>
+                    <p className="text-sm text-darkBrown/70 font-semibold">Total Users</p>
                   </div>
-                  <div className="text-green-500">
+                  <div className="text-caramel">
                     <TrendingUp />
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-md bg-white p-6 shadow-sm">
+              <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:border-caramel transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-3xl font-bold">{adminKPIs?.rewardsIssued ?? 0}</p>
-                      <p className="text-sm text-gray-500">Awards Issued</p>
+                    <p className="text-3xl font-baloo font-bold text-darkBrown">{adminKPIs?.rewardsIssued ?? 0}</p>
+                      <p className="text-sm text-darkBrown/70 font-semibold">Awards Issued</p>
                   </div>
-                  <div className="text-green-500">
+                  <div className="text-caramel">
                     <Gift />
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-md bg-white p-6 shadow-sm">
+              <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:border-caramel transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-3xl font-bold">{adminKPIs?.totalTeasSold ?? 0}</p>
-                    <p className="text-sm text-gray-500">Total Teas Sold</p>
+                    <p className="text-3xl font-baloo font-bold text-darkBrown">{adminKPIs?.totalTeasSold ?? 0}</p>
+                    <p className="text-sm text-darkBrown/70 font-semibold">Total Teas Sold</p>
                   </div>
-                  <div className="text-green-500">
+                  <div className="text-caramel">
                     <TrendingUp />
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-md bg-white p-6 shadow-sm">
+              <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:border-caramel transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-3xl font-bold">₹{adminKPIs?.adminPoolMoney ?? 0}</p>
-                    <p className="text-sm text-gray-500">Total Revenue</p>
+                    <p className="text-3xl font-baloo font-bold text-caramel">₹{adminKPIs?.adminPoolMoney ?? 0}</p>
+                    <p className="text-sm text-darkBrown/70 font-semibold">Total Revenue</p>
                   </div>
-                  <div className="text-green-500 text-2xl font-semibold leading-none">
+                  <div className="text-darkBrown text-2xl font-bold leading-none">
                     ₹
                   </div>
                 </div>
@@ -414,23 +418,23 @@ export function Admin({ initialTab }) {
 
             {/* Charts */}
             <div className="mb-6">
-              <div className="glass-card p-6">
+              <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 shadow-xl hover:shadow-2xl hover:border-caramel transition-all">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">Total Teas Sold Progress</h3>
-                    <div className="text-sm text-gray-600">Progress toward transfer milestone</div>
+                    <h3 className="text-lg font-baloo font-bold text-darkBrown">Total Teas Sold Progress</h3>
+                    <div className="text-sm text-darkBrown/70 font-semibold">Progress toward transfer milestone</div>
                   </div>
-                  <div className="text-sm font-semibold text-gray-800">
+                  <div className="text-sm font-bold text-caramel">
                     {adminKPIs?.totalTeasSold ?? vendorStats?.totalTeasSold ?? 0} / {adminKPIs?.transferMilestoneTeas ?? 5000} teas
                   </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                <div className="w-full bg-beige/40 rounded-full h-4 overflow-hidden border border-caramel/30">
                   {(() => {
                     const total = Number(adminKPIs?.totalTeasSold ?? vendorStats?.totalTeasSold ?? 0);
                     const target = Number(adminKPIs?.transferMilestoneTeas ?? 5000);
                     const pct = target > 0 ? Math.min(100, Math.round((total / target) * 100)) : 0;
                     return (
-                      <div className="h-4 bg-amber-400" style={{ width: `${pct}%` }} />
+                      <div className="h-4 bg-gradient-to-r from-caramel to-darkBrown" style={{ width: `${pct}%` }} />
                     );
                   })()}
                 </div>
@@ -452,14 +456,14 @@ export function Admin({ initialTab }) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="glass-card p-6">
+            <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 shadow-xl">
               <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Awards Issued</h2>
-                    <div className="text-sm text-gray-600">Recipients: {(() => { const ids = new Set((awards || []).map(a => String(a.winnerId || a.winnerId))); return ids.size; })()}</div>
+                    <h2 className="text-xl font-baloo font-bold text-darkBrown">Awards Issued</h2>
+                    <div className="text-sm text-darkBrown/70 font-semibold">Recipients: {(() => { const ids = new Set((awards || []).map(a => String(a.winnerId || a.winnerId))); return ids.size; })()}</div>
                   </div>
                 <div className="flex items-center space-x-4">
-                    <div className="text-sm text-gray-700">Admin Pool: ₹{adminKPIs?.adminPoolMoney ?? 0}</div>
+                    <div className="text-sm text-caramel font-bold">Admin Pool: ₹{adminKPIs?.adminPoolMoney ?? 0}</div>
                     {adminKPIs?.salesLocked && (
                       <div className="text-sm text-red-600 font-semibold">Sales locked — target reached. Process award to distribute pool.</div>
                     )}
@@ -490,23 +494,23 @@ export function Admin({ initialTab }) {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">Date</th>
-                      <th className="text-left py-3 px-4">Winner</th>
-                      <th className="text-left py-3 px-4">Email</th>
-                      <th className="text-left py-3 px-4">Amount</th>
+                    <tr className="border-b-2 border-caramel/30">
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Date</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Winner</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Email</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                       {awards.length === 0 ? (
-                      <tr><td className="py-4 px-4" colSpan={4}>No awards issued yet.</td></tr>
+                      <tr><td className="py-4 px-4 text-darkBrown/70" colSpan={4}>No awards issued yet.</td></tr>
                     ) : (
                       awards.map((a) => (
-                        <tr key={a._id || a.date} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4">{new Date(a.date).toLocaleString()}</td>
-                          <td className="py-3 px-4">{a.winnerName || a.winnerId}</td>
-                          <td className="py-3 px-4">{a.winnerEmail || '-'}</td>
-                          <td className="py-3 px-4">₹{a.amount.toLocaleString()}</td>
+                        <tr key={a._id || a.date} className="border-b border-caramel/20 hover:bg-beige/30 transition-colors">
+                          <td className="py-3 px-4 text-darkBrown">{new Date(a.date).toLocaleString()}</td>
+                          <td className="py-3 px-4 text-darkBrown font-semibold">{a.winnerName || a.winnerId}</td>
+                          <td className="py-3 px-4 text-darkBrown/70">{a.winnerEmail || '-'}</td>
+                          <td className="py-3 px-4 text-caramel font-bold">₹{a.amount.toLocaleString()}</td>
                         </tr>
                       ))
                     )}
@@ -520,31 +524,31 @@ export function Admin({ initialTab }) {
         {/* Withdrawals Tab */}
         {activeTab === 'withdrawals' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-            <div className="glass-card p-6">
+            <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 shadow-xl">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Withdrawal Requests</h2>
+                <h2 className="text-xl font-baloo font-bold text-darkBrown">Withdrawal Requests</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">Requested At</th>
-                      <th className="text-left py-3 px-4">User</th>
-                      <th className="text-left py-3 px-4">Points</th>
-                      <th className="text-left py-3 px-4">Status</th>
-                      <th className="text-left py-3 px-4">Actions</th>
+                    <tr className="border-b-2 border-caramel/30">
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Requested At</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">User</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Points</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Status</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {withdrawals.length === 0 ? (
-                      <tr><td className="py-4 px-4" colSpan={5}>No withdrawal requests.</td></tr>
+                      <tr><td className="py-4 px-4 text-darkBrown/70" colSpan={5}>No withdrawal requests.</td></tr>
                     ) : (
                       withdrawals.map(w => (
-                        <tr key={w._id} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4">{new Date(w.requestedAt).toLocaleString()}</td>
-                          <td className="py-3 px-4">{w.userName || w.userId}</td>
-                          <td className="py-3 px-4">{(w.requestedPoints || 0).toLocaleString()}</td>
-                          <td className="py-3 px-4">{w.status}</td>
+                        <tr key={w._id} className="border-b border-caramel/20 hover:bg-beige/30 transition-colors">
+                          <td className="py-3 px-4 text-darkBrown">{new Date(w.requestedAt).toLocaleString()}</td>
+                          <td className="py-3 px-4 text-darkBrown font-semibold">{w.userName || w.userId}</td>
+                          <td className="py-3 px-4 text-caramel font-bold">{(w.requestedPoints || 0).toLocaleString()}</td>
+                          <td className="py-3 px-4 text-darkBrown/70">{w.status}</td>
                           <td className="py-3 px-4">
                             <div className="flex space-x-2">
                               {w.status === 'pending' && (
@@ -582,35 +586,35 @@ export function Admin({ initialTab }) {
         {/* Reviews Tab */}
         {activeTab === 'reviews' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-            <div className="glass-card p-6">
+            <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 shadow-xl">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">User Reviews</h2>
-                <div className="text-sm text-gray-600">Manage submitted reviews (approve/delete)</div>
+                <h2 className="text-xl font-baloo font-bold text-darkBrown">User Reviews</h2>
+                <div className="text-sm text-darkBrown/70 font-semibold">Manage submitted reviews (approve/delete)</div>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">Submitted</th>
-                      <th className="text-left py-3 px-4">User</th>
-                      <th className="text-left py-3 px-4">Rating</th>
-                      <th className="text-left py-3 px-4">Comment</th>
-                      <th className="text-left py-3 px-4">Approved</th>
-                      <th className="text-left py-3 px-4">Actions</th>
+                    <tr className="border-b-2 border-caramel/30">
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Submitted</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">User</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Rating</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Comment</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Approved</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reviews.length === 0 ? (
-                      <tr><td className="py-4 px-4" colSpan={6}>No reviews submitted.</td></tr>
+                      <tr><td className="py-4 px-4 text-darkBrown/70" colSpan={6}>No reviews submitted.</td></tr>
                     ) : (
                       reviews.map(r => (
-                        <tr key={r._id} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4">{new Date(r.createdAt).toLocaleString()}</td>
-                          <td className="py-3 px-4">{r.name || r.userId || 'Anonymous'}</td>
-                          <td className="py-3 px-4">{r.rating}</td>
-                          <td className="py-3 px-4">{r.comment || ''}</td>
-                          <td className="py-3 px-4">{r.approved ? 'Yes' : 'No'}</td>
+                        <tr key={r._id} className="border-b border-caramel/20 hover:bg-beige/30 transition-colors">
+                          <td className="py-3 px-4 text-darkBrown">{new Date(r.createdAt).toLocaleString()}</td>
+                          <td className="py-3 px-4 text-darkBrown font-semibold">{r.name || r.userId || 'Anonymous'}</td>
+                          <td className="py-3 px-4 text-caramel font-bold">{r.rating}</td>
+                          <td className="py-3 px-4 text-darkBrown/70">{r.comment || ''}</td>
+                          <td className="py-3 px-4 text-darkBrown/70">{r.approved ? 'Yes' : 'No'}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               <button onClick={async () => {
@@ -621,8 +625,8 @@ export function Admin({ initialTab }) {
                                   setReviews(prev => prev.map(rr => rr._id === r._id ? { ...rr, approved: !rr.approved } : rr));
                                   addNotification({ id: Date.now(), text: 'Review updated' });
                                 } catch (e) { console.error(e); addNotification({ id: Date.now(), text: 'Network error' }); }
-                              }} className="px-3 py-1 rounded bg-amber-400 text-white text-sm">{r.approved ? 'Unapprove' : 'Approve'}</button>
-                              <button onClick={() => handleDeleteReview(r._id)} className="px-3 py-1 rounded border text-sm">Delete</button>
+                              }} className="px-3 py-1 rounded bg-gradient-to-r from-caramel to-darkBrown text-cream text-sm font-semibold hover:shadow-lg transition-all">{r.approved ? 'Unapprove' : 'Approve'}</button>
+                              <button onClick={() => handleDeleteReview(r._id)} className="px-3 py-1 rounded border-2 border-caramel/40 text-darkBrown text-sm font-semibold hover:bg-beige/30 transition-all">Delete</button>
                             </div>
                           </td>
                         </tr>
@@ -642,19 +646,19 @@ export function Admin({ initialTab }) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="glass-card p-6">
+            <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 shadow-xl">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">User Management</h2>
+                <h2 className="text-xl font-baloo font-bold text-darkBrown">User Management</h2>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
                   <div className="relative flex-1 min-w-0">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-caramel" />
                     <input
                       type="text"
                       placeholder="Search users..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-amber focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border-2 border-caramel/30 bg-warmWhite rounded-lg focus:outline-none focus:ring-2 focus:ring-caramel focus:border-caramel"
                     />
                   </div>
 
@@ -675,39 +679,39 @@ export function Admin({ initialTab }) {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">User</th>
-                      <th className="text-left py-3 px-4">Rank</th>
-                      <th className="text-left py-3 px-4">Points</th>
-                      <th className="text-left py-3 px-4">Teas</th>
-                      <th className="text-left py-3 px-4">Status</th>
-                      <th className="text-left py-3 px-4">Actions</th>
+                    <tr className="border-b-2 border-caramel/30">
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">User</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Rank</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Points</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Teas</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Status</th>
+                      <th className="text-left py-3 px-4 text-darkBrown font-bold">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(() => {
                       const usersToShow = (!searchTerm.trim() && activeTab === 'users') ? allUsers : filteredUsers;
                       if (!usersToShow || usersToShow.length === 0) {
-                        return <tr><td className="py-4 px-4" colSpan={6}>No users found.</td></tr>;
+                        return <tr><td className="py-4 px-4 text-darkBrown/70" colSpan={6}>No users found.</td></tr>;
                       }
                       return usersToShow.map((user, index) => (
-                        <tr key={user.id || user._id || index} className="border-b hover:bg-gray-50">
+                        <tr key={user.id || user._id || index} className="border-b border-caramel/20 hover:bg-beige/30 transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-center space-x-3">
                             <img 
                               src={user.avatar} 
                               alt={user.name}
-                              className="w-8 h-8 rounded-full"
+                              className="w-8 h-8 rounded-full border-2 border-caramel/40"
                             />
                             <div>
-                              <div className="font-medium">{user.name}</div>
-                              <div className="text-sm text-gray-600">{user.email}</div>
+                              <div className="font-semibold text-darkBrown">{user.name}</div>
+                              <div className="text-sm text-darkBrown/70">{user.email}</div>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4">{user.rank ?? user.rankPosition ?? '-'}</td>
-                        <td className="py-3 px-4">{user.points.toLocaleString()}</td>
-                        <td className="py-3 px-4">{user.teasConsumed || 0}</td>
+                        <td className="py-3 px-4 text-darkBrown">{user.rank ?? user.rankPosition ?? '-'}</td>
+                        <td className="py-3 px-4 text-caramel font-bold">{user.points.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-darkBrown">{user.teasConsumed || 0}</td>
                         <td className="py-3 px-4">
                           {(() => {
                             const st = getStatus(user);
@@ -744,14 +748,14 @@ export function Admin({ initialTab }) {
         {/* Global Add Teas Modal (available in any tab) */}
         {showAddTeasModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-3">Add Teas to {selectedUser?.name}</h3>
+            <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 w-full max-w-md shadow-2xl">
+              <h3 className="text-lg font-baloo font-bold text-darkBrown mb-3">Add Teas to {selectedUser?.name}</h3>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Number of teas</label>
-                <input type="number" min="1" value={teasToAdd} onChange={e => setTeasToAdd(parseInt(e.target.value || '0', 10))} className="w-full px-3 py-2 border rounded" />
+                <label className="block text-sm font-semibold text-darkBrown mb-1">Number of teas</label>
+                <input type="number" min="1" value={teasToAdd} onChange={e => setTeasToAdd(parseInt(e.target.value || '0', 10))} className="w-full px-3 py-2 border-2 border-caramel/30 bg-warmWhite rounded-lg focus:outline-none focus:ring-2 focus:ring-caramel focus:border-caramel" />
               </div>
               <div className="flex justify-end space-x-2">
-                <button onClick={() => { setShowAddTeasModal(false); setSelectedUser(null); setTeasToAdd(1); }} className="px-4 py-2 rounded border">Cancel</button>
+                <button onClick={() => { setShowAddTeasModal(false); setSelectedUser(null); setTeasToAdd(1); }} className="px-4 py-2 rounded-lg border-2 border-caramel/40 text-darkBrown font-semibold hover:bg-beige/30 transition-all">Cancel</button>
                 <button onClick={async () => {
                   if (!selectedUser) return;
                   const n = Number(teasToAdd) || 0;
@@ -802,7 +806,7 @@ export function Admin({ initialTab }) {
                   } finally {
                     setIsSubmittingTeas(false);
                   }
-                }} className="px-4 py-2 rounded bg-amber-500 text-white" disabled={isSubmittingTeas}>{isSubmittingTeas ? 'Saving…' : 'Save'}</button>
+                }} className="px-4 py-2 rounded-lg bg-gradient-to-r from-caramel to-darkBrown text-cream font-bold hover:shadow-lg transition-all disabled:opacity-50" disabled={isSubmittingTeas}>{isSubmittingTeas ? 'Saving…' : 'Save'}</button>
               </div>
             </div>
           </div>

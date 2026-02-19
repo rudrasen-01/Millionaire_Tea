@@ -243,4 +243,93 @@ router.post(
   }
 );
 
+
+// ================= UPDATE PROFILE =================
+router.put(
+  '/update-profile',
+  auth,
+  upload.single("image"),
+  [
+    body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
+    body('email').optional().isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('phone').optional().trim(),
+    body('address').optional().trim(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user)
+        return res.status(404).json({ message: 'User not found' });
+
+      const { name, email, phone, address } = req.body;
+
+      // Update fields if provided
+      if (name !== undefined) user.name = name;
+      if (phone !== undefined) user.phone = phone;
+      if (address !== undefined) user.address = address;
+
+      // Check email uniqueness if changing
+      if (email !== undefined && email !== user.email) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser)
+          return res.status(409).json({ message: 'Email already in use' });
+        user.email = email;
+      }
+
+      // Handle profile image upload
+      if (req.file) {
+        try {
+          // Delete old image if exists
+          if (user.profileImageId) {
+            try {
+              await cloudinary.uploader.destroy(user.profileImageId);
+            } catch (e) {
+              console.error('Failed to delete old image:', e);
+            }
+          }
+
+          // Upload new image
+          const result = await uploadToCloudinary(req.file.path);
+          user.profileImage = result.secure_url;
+          user.profileImageId = result.public_id;
+
+          // Clean up temp file
+          try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
+        } catch (e) {
+          console.error('Cloudinary upload failed:', e);
+          return res.status(500).json({ message: 'Failed to upload profile image' });
+        }
+      }
+
+      await user.save();
+
+      return res.json({
+        message: 'Profile updated successfully',
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          address: user.address,
+          role: user.role,
+          points: user.points,
+          profileImage: user.profileImage,
+          rank: user.rankPosition,
+          rankPosition: user.rankPosition,
+          claimableRewards: user.claimableRewards,
+          createdAt: user.createdAt
+        }
+      });
+
+    } catch (err) {
+      console.error('Update profile error:', err);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
 module.exports = router;

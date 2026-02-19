@@ -14,7 +14,8 @@ const initialState = {
   isLoading: true,
   currentPage: 'dashboard',
   showTooltip: false,
-  notifications: []
+  notifications: [],
+  darkMode: false
 };
 
 function appReducer(state, action) {
@@ -53,6 +54,9 @@ function appReducer(state, action) {
           m.id === action.payload.id ? { ...m, achieved: true } : m
         )
       };
+    
+    case 'SET_DARK_MODE':
+      return { ...state, darkMode: action.payload };
     
     case 'ADD_NOTIFICATION':
       return {
@@ -110,6 +114,23 @@ function appReducer(state, action) {
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+
+  // Initialize dark mode from localStorage
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode !== null) {
+      dispatch({ type: 'SET_DARK_MODE', payload: savedDarkMode === 'true' });
+    }
+  }, []);
+
+  // Apply dark mode class to document
+  useEffect(() => {
+    if (state.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [state.darkMode]);
 
   // check current auth state on mount and clear loading when done
   useEffect(() => {
@@ -212,12 +233,12 @@ export function AppProvider({ children }) {
         dispatch({ type: 'UPDATE_USER_POINTS', payload: payload.user.points - (state.user.points || 0) });
         dispatch({ type: 'UPDATE_USER_RANK', payload: payload.user.rankPosition });
       }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Dashboard updated' } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'Dashboard updated', type: 'info' } });
     });
     socket.on('withdrawal:created', (payload) => {
       // if the event belongs to the current user, refresh their withdrawals
       try { if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals(); } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Withdrawal request created' } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'Withdrawal request created', type: 'success' } });
     });
     socket.on('withdrawal:accepted', (payload) => {
       try {
@@ -225,24 +246,24 @@ export function AppProvider({ children }) {
         // if current user is admin, refresh admin list
         if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'A withdrawal request was accepted' } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'A withdrawal request was accepted', type: 'success' } });
     });
     socket.on('withdrawal:confirmed', (payload) => {
       try {
         if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
         if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'A withdrawal was confirmed' } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'A withdrawal was confirmed', type: 'success' } });
     });
     socket.on('withdrawal:paid', (payload) => {
       try {
         if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
         if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'A withdrawal was marked paid' } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'A withdrawal was marked paid', type: 'success' } });
     });
     socket.on('reward:transferred', (info) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: `Reward transferred: ${info.amount}` } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: `Reward transferred: ${info.amount}`, type: 'success' } });
       // If current user is admin, refresh admin awards and notify admin UI listeners
       (async () => {
         try {
@@ -257,10 +278,10 @@ export function AppProvider({ children }) {
       })();
     });
     socket.on('user:claimed', (info) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: `User claimed ${info.amount}` } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: `User claimed ${info.amount}`, type: 'success' } });
     });
     socket.on('admin:configUpdated', (cfg) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), text: 'Admin config updated' } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'Admin config updated', type: 'info' } });
     });
 
     return () => {
@@ -278,10 +299,23 @@ export function AppProvider({ children }) {
     setCurrentPage: (page) => dispatch({ type: 'SET_PAGE', payload: page }),
     addRewardHistory: (history) => dispatch({ type: 'ADD_REWARD_HISTORY', payload: history }),
     updateMilestone: (milestone) => dispatch({ type: 'UPDATE_MILESTONE', payload: milestone }),
-    addNotification: (notification) => dispatch({ type: 'ADD_NOTIFICATION', payload: notification }),
+    addNotification: (notification) => {
+      // Convert old format { text, id } to new format { message, type, id }
+      const formattedNotification = {
+        id: notification.id || Date.now(),
+        message: notification.message || notification.text || 'Notification',
+        type: notification.type || 'info'
+      };
+      dispatch({ type: 'ADD_NOTIFICATION', payload: formattedNotification });
+    },
     removeNotification: (id) => dispatch({ type: 'REMOVE_NOTIFICATION', payload: id }),
     showTooltip: (show) => dispatch({ type: 'SHOW_TOOLTIP', payload: show }),
-    claimPrize: () => dispatch({ type: 'CLAIM_PRIZE' })
+    claimPrize: () => dispatch({ type: 'CLAIM_PRIZE' }),
+    toggleDarkMode: () => {
+      const newDarkMode = !state.darkMode;
+      dispatch({ type: 'SET_DARK_MODE', payload: newDarkMode });
+      localStorage.setItem('darkMode', String(newDarkMode));
+    }
   };
 
   return (

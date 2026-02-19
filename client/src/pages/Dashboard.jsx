@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Coffee, Trophy, Star, TrendingUp, CheckCircle, Wallet, Target, ArrowRight } from 'lucide-react';
+import { Coffee, Trophy, Star } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export function Dashboard({ scrollTo }) {
@@ -64,239 +64,162 @@ export function Dashboard({ scrollTo }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen p-6"
-      style={{ background: 'transparent' }}
+      style={{ minHeight: '100vh', padding: '1.5rem', background: 'transparent' }}
     >
-      <div className="max-w-7xl mx-auto">
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Header */}
         <motion.div 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="mb-8"
+          initial={{ y: -20 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.3 }}
+          style={{ marginBottom: '2rem' }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
-                Welcome back, {user.name}! ☕
-              </h1>
-              <p className="text-lg text-gray-600">
-                Track your progress, earn rewards, and climb the ranks
-              </p>
-            </div>
-            <div className="hidden md:flex items-center gap-3">
-              <div className="glass-card px-4 py-2">
-                <div className="text-xs text-gray-500 mb-1">Member Since</div>
-                <div className="text-sm font-semibold text-gray-900">
-                  {new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                </div>
-              </div>
-            </div>
-          </div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937', marginBottom: '0.5rem' }}>
+            Welcome back, {user.name}! ☕
+          </h1>
+          <p style={{ color: '#6B7280' }}>
+            Your tea journey continues. Keep earning those reward points!
+          </p>
         </motion.div>
 
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Points Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="glass-card-premium p-6 hover-lift group"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-tea-400 to-tea-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <Coffee className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-600">Teas Consumed</div>
-                  <div className="text-3xl font-bold text-gray-900">{user.teasConsumed}</div>
-                </div>
+        {/* Metric Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div className="metric-card">
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ 
+                width: '3rem', 
+                height: '3rem', 
+                borderRadius: '0.75rem', 
+                background: 'linear-gradient(to bottom right, #FF9933, #FF8C00)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                marginRight: '1rem'
+              }}>
+                <Coffee style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
               </div>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center text-green-600 font-medium">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                +12%
+              <div>
+                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.25rem' }}>Teas Consumed</div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937' }}>{user.teasConsumed}</div>
+                <div style={{ fontSize: '0.75rem', color: '#FF9933' }}>↑ 12% this month</div>
               </div>
-              <span className="text-gray-500">this month</span>
-            </div>
-          </motion.div>
-
-          {/* Reward Points Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="glass-card-premium p-6 hover-lift group relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-tea-200 to-premium-200 rounded-full filter blur-3xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
-            <div className="relative z-10">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-luxury-gold to-tea-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Star className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-600">Reward Points</div>
-                    <div className="text-3xl font-bold text-gray-900">{user.points.toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-              <div className="text-sm">
-                {user.points >= 50000 ? (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    Withdrawal Unlocked
-                  </span>
-                ) : (
-                  <span className="text-gray-600">
-                    {(50000 - user.points).toLocaleString()} points to unlock
-                  </span>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Rank Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="glass-card-premium p-6 hover-lift group"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <Trophy className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-600">Current Rank</div>
-                  {user.role !== 'admin' ? (
-                    <div className="text-3xl font-bold text-gray-900">#{user.rank ?? user.rankPosition ?? '-'}</div>
-                  ) : (
-                    <div className="text-2xl font-bold text-gray-900">Admin</div>
-                  )}
-                </div>
-              </div>
-            </div>
-            {user.role !== 'admin' && (
-              <div className="text-sm text-gray-600">
-                of {allUsers?.length || 0} active members
-              </div>
-            )}
-          </motion.div>
-        </div>
-
-        {/* Progress Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
-          className="glass-card-premium p-8 mb-8"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Unlock Progress</h2>
-              <p className="text-gray-600">Reach 50,000 points to enable withdrawals</p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold gradient-text">{progressPercentage.toFixed(1)}%</div>
-              <div className="text-sm text-gray-500">Complete</div>
             </div>
           </div>
           
-          <div className="relative">
-            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
-              <motion.div
-                className="h-4 rounded-full shadow-glow"
-                style={{ 
-                  background: 'linear-gradient(90deg, #FF9800, #F57C00)',
-                  width: `${Math.min(progressPercentage, 100)}%`
-                }}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
-              />
-            </div>
-            <div className="flex justify-between mt-2 text-sm">
-              <span className="text-gray-600">{user.points.toLocaleString()} points</span>
-              <span className="font-bold text-tea-600">50,000 points</span>
-            </div>
-          </div>
-
-          {pointsToUnlock > 0 && (
-            <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-tea-50 to-orange-50 border border-tea-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-                  <Target className="w-5 h-5 text-tea-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">Keep Going!</div>
-                  <div className="text-sm text-gray-600">
-                    You need <span className="font-bold text-tea-700">{pointsToUnlock.toLocaleString()}</span> more points to unlock withdrawal
-                  </div>
-                </div>
+          <div className="metric-card">
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ 
+                width: '3rem', 
+                height: '3rem', 
+                borderRadius: '0.75rem', 
+                background: 'linear-gradient(to bottom right, #FF8C00, #FF6B35)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                marginRight: '1rem'
+              }}>
+                <Star style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.25rem' }}>Reward Points</div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937' }}>{user.points}</div>
+                <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>Locked until 50,000</div>
               </div>
             </div>
-          )}
-        </motion.div>
+          </div>
+          
+          <div className="metric-card">
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ 
+                width: '3rem', 
+                height: '3rem', 
+                borderRadius: '0.75rem', 
+                background: 'linear-gradient(to bottom right, #FFD700, #FFA500)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                marginRight: '1rem'
+              }}>
+                <Trophy style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.25rem' }}>Current Rank</div>
+                {user.role !== 'admin' ? (
+                  <>
+                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937' }}>{user.rank ?? user.rankPosition ?? '-'}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>of {allUsers?.length || 0} users</div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: '1rem', color: '#6B7280' }}>Admin</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Section removed per request */}
 
         {/* Action Buttons */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+          transition={{ duration: 0.3, delay: 0.2 }}
+          style={{ display: 'flex', flexDirection: 'row', gap: '1rem', flexWrap: 'wrap' }}
         >
-          <button 
-            onClick={() => setCurrentPage('wallet')}
-            className="glass-card p-6 hover-lift group text-left transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-tea-400 to-tea-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <Wallet className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-gray-900 text-lg">Wallet</div>
-                <div className="text-sm text-gray-600">Manage rewards & withdrawals</div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-tea-600 group-hover:translate-x-1 transition-all" />
-            </div>
-          </button>
-
-          <button 
-            onClick={() => setCurrentPage('ranking')}
-            className="glass-card p-6 hover-lift group text-left transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <Trophy className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-gray-900 text-lg">Rankings</div>
-                <div className="text-sm text-gray-600">View leaderboard & compete</div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => setCurrentPage('reviews')}
-            className="glass-card p-6 hover-lift group text-left transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <Star className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-gray-900 text-lg">Reviews</div>
-                <div className="text-sm text-gray-600">Share your experience</div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-            </div>
-          </button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <button 
+              onClick={() => setCurrentPage('wallet')}
+              style={{
+                background: 'linear-gradient(to right, #FF9933, #FF8C00)',
+                color: 'white',
+                padding: '0.75rem 2rem',
+                borderRadius: '0.5rem',
+                fontWeight: 'bold',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                boxShadow: '0 4px 12px rgba(255, 153, 51, 0.3)'
+              }}
+            >
+              View Wallet
+            </button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <button 
+              onClick={() => setCurrentPage('ranking')}
+                style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.82)',
+                color: '#FF8C00',
+                padding: '0.75rem 2rem',
+                borderRadius: '0.5rem',
+                fontWeight: 'bold',
+                border: '2px solid rgba(255, 153, 51, 0.18)',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                boxShadow: '0 4px 12px rgba(255, 153, 51, 0.12)'
+              }}
+            >
+              View Rankings
+            </button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <button
+              onClick={() => setCurrentPage('reviews')}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                color: '#1F2937',
+                padding: '0.75rem 2rem',
+                borderRadius: '0.5rem',
+                fontWeight: '600',
+                border: '1px solid rgba(229,231,235,0.9)',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                boxShadow: '0 6px 18px rgba(0,0,0,0.04)'
+              }}
+            >
+              View Reviews
+            </button>
+          </motion.div>
         </motion.div>
           {scrollTo === 'reviews' && (
             <>
