@@ -16,16 +16,16 @@ export function Dashboard({ scrollTo }) {
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', padding: '1.5rem', background: 'transparent' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '2rem' }}>
-            <div style={{ height: '2rem', width: '16rem', backgroundColor: '#E5E7EB', borderRadius: '0.5rem', marginBottom: '0.5rem' }}></div>
-            <div style={{ height: '1rem', width: '24rem', backgroundColor: '#E5E7EB', borderRadius: '0.5rem' }}></div>
+      <div className="min-h-screen p-6 bg-gradient-to-br from-cream via-warmWhite to-cream">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <div className="h-8 w-64 bg-gray-200 rounded-lg mb-2"></div>
+            <div className="h-4 w-96 bg-gray-200 rounded-lg"></div>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {[1, 2, 3].map((i) => (
-              <div key={i} style={{ backgroundColor: '#ffffff', borderRadius: '1.25rem', padding: '1rem', height: '120px', boxShadow: '0 8px 24px -8px rgba(0,0,0,0.06)' }}></div>
+              <div key={i} className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-4 h-32 shadow-xl"></div>
             ))}
           </div>
         </div>
@@ -64,93 +64,66 @@ export function Dashboard({ scrollTo }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      style={{ minHeight: '100vh', padding: '1.5rem', background: 'transparent' }}
+      className="min-h-screen p-6 bg-gradient-to-br from-cream via-warmWhite to-cream"
     >
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div 
           initial={{ y: -20 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.3 }}
-          style={{ marginBottom: '2rem' }}
+          className="mb-8"
         >
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937', marginBottom: '0.5rem' }}>
+          <h1 className="text-3xl font-bold text-darkBrown mb-2 font-baloo">
             Welcome back, {user.name}! ☕
           </h1>
-          <p style={{ color: '#6B7280' }}>
+          <p className="text-darkBrown/70">
             Your tea journey continues. Keep earning those reward points!
           </p>
         </motion.div>
 
         {/* Metric Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-          <div className="metric-card">
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-              <div style={{ 
-                width: '3rem', 
-                height: '3rem', 
-                borderRadius: '0.75rem', 
-                background: 'linear-gradient(to bottom right, #FF9933, #FF8C00)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                marginRight: '1rem'
-              }}>
-                <Coffee style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="metric-card bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-caramel to-darkBrown flex items-center justify-center mr-4">
+                <Coffee className="w-6 h-6 text-cream" />
               </div>
               <div>
-                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.25rem' }}>Teas Consumed</div>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937' }}>{user.teasConsumed}</div>
-                <div style={{ fontSize: '0.75rem', color: '#FF9933' }}>↑ 12% this month</div>
+                <div className="text-sm text-darkBrown/60 mb-1">Teas Consumed</div>
+                <div className="text-3xl font-bold text-darkBrown">{user.teasConsumed}</div>
+                <div className="text-xs text-caramel">↑ 12% this month</div>
               </div>
             </div>
           </div>
           
-          <div className="metric-card">
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-              <div style={{ 
-                width: '3rem', 
-                height: '3rem', 
-                borderRadius: '0.75rem', 
-                background: 'linear-gradient(to bottom right, #FF8C00, #FF6B35)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                marginRight: '1rem'
-              }}>
-                <Star style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+          <div className="metric-card bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-caramel to-darkBrown flex items-center justify-center mr-4">
+                <Star className="w-6 h-6 text-cream" />
               </div>
               <div>
-                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.25rem' }}>Reward Points</div>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937' }}>{user.points}</div>
-                <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>Locked until 50,000</div>
+                <div className="text-sm text-darkBrown/60 mb-1">Reward Points</div>
+                <div className="text-3xl font-bold text-darkBrown">{user.points}</div>
+                <div className="text-xs text-darkBrown/60">Locked until 50,000</div>
               </div>
             </div>
           </div>
           
-          <div className="metric-card">
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-              <div style={{ 
-                width: '3rem', 
-                height: '3rem', 
-                borderRadius: '0.75rem', 
-                background: 'linear-gradient(to bottom right, #FFD700, #FFA500)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                marginRight: '1rem'
-              }}>
-                <Trophy style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+          <div className="metric-card bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-caramel to-darkBrown flex items-center justify-center mr-4">
+                <Trophy className="w-6 h-6 text-cream" />
               </div>
               <div>
-                <div style={{ fontSize: '0.875rem', color: '#6B7280', marginBottom: '0.25rem' }}>Current Rank</div>
+                <div className="text-sm text-darkBrown/60 mb-1">Current Rank</div>
                 {user.role !== 'admin' ? (
                   <>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1F2937' }}>{user.rank ?? user.rankPosition ?? '-'}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>of {allUsers?.length || 0} users</div>
+                    <div className="text-3xl font-bold text-darkBrown">{user.rank ?? user.rankPosition ?? '-'}</div>
+                    <div className="text-xs text-darkBrown/60">of {allUsers?.length || 0} users</div>
                   </>
                 ) : (
-                  <div style={{ fontSize: '1rem', color: '#6B7280' }}>Admin</div>
+                  <div className="text-base text-darkBrown/60">Admin</div>
                 )}
               </div>
             </div>
@@ -164,22 +137,12 @@ export function Dashboard({ scrollTo }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
-          style={{ display: 'flex', flexDirection: 'row', gap: '1rem', flexWrap: 'wrap' }}
+          className="flex flex-row gap-4 flex-wrap"
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <button 
               onClick={() => setCurrentPage('wallet')}
-              style={{
-                background: 'linear-gradient(to right, #FF9933, #FF8C00)',
-                color: 'white',
-                padding: '0.75rem 2rem',
-                borderRadius: '0.5rem',
-                fontWeight: 'bold',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                boxShadow: '0 4px 12px rgba(255, 153, 51, 0.3)'
-              }}
+              className="bg-gradient-to-r from-caramel to-darkBrown text-cream px-8 py-3 rounded-lg font-bold border-none cursor-pointer text-base shadow-lg hover:shadow-xl transition-all"
             >
               View Wallet
             </button>
@@ -187,17 +150,7 @@ export function Dashboard({ scrollTo }) {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <button 
               onClick={() => setCurrentPage('ranking')}
-                style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.82)',
-                color: '#FF8C00',
-                padding: '0.75rem 2rem',
-                borderRadius: '0.5rem',
-                fontWeight: 'bold',
-                border: '2px solid rgba(255, 153, 51, 0.18)',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                boxShadow: '0 4px 12px rgba(255, 153, 51, 0.12)'
-              }}
+              className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 text-caramel px-8 py-3 rounded-lg font-bold cursor-pointer text-base shadow-lg hover:shadow-xl transition-all"
             >
               View Rankings
             </button>
@@ -205,17 +158,7 @@ export function Dashboard({ scrollTo }) {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <button
               onClick={() => setCurrentPage('reviews')}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.92)',
-                color: '#1F2937',
-                padding: '0.75rem 2rem',
-                borderRadius: '0.5rem',
-                fontWeight: '600',
-                border: '1px solid rgba(229,231,235,0.9)',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                boxShadow: '0 6px 18px rgba(0,0,0,0.04)'
-              }}
+              className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 text-darkBrown px-8 py-3 rounded-lg font-semibold cursor-pointer text-base shadow-lg hover:shadow-xl transition-all"
             >
               View Reviews
             </button>
@@ -224,16 +167,16 @@ export function Dashboard({ scrollTo }) {
           {scrollTo === 'reviews' && (
             <>
               {/* Review Submission */}
-              <motion.div id="reviews-section" style={{ marginTop: '1.5rem', maxWidth: '720px' }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.75rem', boxShadow: '0 6px 18px rgba(0,0,0,0.04)' }}>
-                  <div style={{ marginBottom: '0.5rem', fontWeight: '600' }}>Share your experience</div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <motion.div id="reviews-section" className="mt-6 max-w-3xl" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-4 shadow-xl">
+                  <div className="mb-2 font-semibold text-darkBrown">Share your experience</div>
+                  <div className="flex gap-2 items-center mb-2">
                     {[1,2,3,4,5].map(n => (
-                      <button key={n} onClick={() => setRating(n)} style={{ background: n <= rating ? '#FBBF24' : 'transparent', border: '1px solid #E5E7EB', padding: '0.35rem 0.6rem', borderRadius: '0.35rem', cursor: 'pointer' }}>{n}★</button>
+                      <button key={n} onClick={() => setRating(n)} className={`${n <= rating ? 'bg-caramel' : 'bg-transparent'} border border-caramel/30 px-3 py-2 rounded-lg cursor-pointer hover:bg-caramel/70 transition-colors text-darkBrown`}>{n}★</button>
                     ))}
                   </div>
-                  <textarea value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder="Write a short comment (optional)" rows={3} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #E5E7EB', marginBottom: '0.5rem' }} />
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <textarea value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder="Write a short comment (optional)" rows={3} className="w-full p-2 rounded-lg border-2 border-caramel/30 bg-warmWhite mb-2 focus:outline-none focus:ring-2 focus:ring-caramel text-darkBrown" />
+                  <div className="flex gap-2">
                     <button disabled={isSubmittingReview} onClick={async () => {
                       try {
                         setIsSubmittingReview(true);
@@ -244,28 +187,28 @@ export function Dashboard({ scrollTo }) {
                         setReviewComment(''); setRating(5);
                       } catch (e) { console.error('Submit review error', e); addNotification({ id: Date.now(), text: 'Network error' }); }
                       finally { setIsSubmittingReview(false); }
-                    }} style={{ background: 'linear-gradient(to right,#FF9933,#FF8C00)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: 'none' }}>{isSubmittingReview ? 'Submitting...' : 'Submit Review'}</button>
-                    <button onClick={() => { setRating(5); setReviewComment(''); }} style={{ background: 'transparent', border: '1px solid #E5E7EB', padding: '0.5rem 1rem', borderRadius: '0.5rem' }}>Clear</button>
+                    }} className="bg-gradient-to-r from-caramel to-darkBrown text-cream px-4 py-2 rounded-lg border-none hover:shadow-lg transition-all disabled:opacity-50">{isSubmittingReview ? 'Submitting...' : 'Submit Review'}</button>
+                    <button onClick={() => { setRating(5); setReviewComment(''); }} className="bg-transparent border-2 border-caramel/30 text-darkBrown px-4 py-2 rounded-lg hover:bg-beige/30 transition-colors">Clear</button>
                   </div>
                 </div>
               </motion.div>
 
               {/* My Reviews */}
-              <motion.div style={{ marginTop: '1.25rem', maxWidth: '720px' }} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-                <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.75rem', boxShadow: '0 6px 18px rgba(0,0,0,0.04)' }}>
-                  <div style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Your Reviews</div>
+              <motion.div className="mt-5 max-w-3xl" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-2xl p-4 shadow-xl">
+                  <div className="font-semibold mb-3 text-darkBrown">Your Reviews</div>
                   {userReviews.length === 0 ? (
-                    <div style={{ color: '#6B7280' }}>You haven't submitted any reviews yet.</div>
+                    <div className="text-darkBrown/60">You haven't submitted any reviews yet.</div>
                   ) : (
-                    <div style={{ display: 'grid', gap: '0.75rem' }}>
+                    <div className="grid gap-3">
                       {userReviews.map(r => (
-                        <div key={r._id} style={{ border: '1px solid #E5E7EB', padding: '0.75rem', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div key={r._id} className="border-2 border-caramel/30 bg-warmWhite p-3 rounded-lg flex justify-between items-center">
                           <div>
-                            <div style={{ fontWeight: 600 }}>{r.name || (user && user.name)}</div>
-                            <div style={{ color: '#6B7280', fontSize: '0.9rem' }}>{r.comment || '<no comment>'}</div>
-                            <div style={{ marginTop: '0.35rem', fontSize: '0.85rem', color: '#6B7280' }}>Rating: {r.rating} · {r.approved ? 'Approved' : 'Pending'}</div>
+                            <div className="font-semibold text-darkBrown">{r.name || (user && user.name)}</div>
+                            <div className="text-darkBrown/60 text-sm">{r.comment || '<no comment>'}</div>
+                            <div className="mt-1 text-xs text-darkBrown/60">Rating: {r.rating} · {r.approved ? 'Approved' : 'Pending'}</div>
                           </div>
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <div className="flex gap-2">
                             <button onClick={async () => {
                               try {
                                 const res = await fetch(`/api/reviews/${r._id}`, { method: 'DELETE', credentials: 'include' });
@@ -274,7 +217,7 @@ export function Dashboard({ scrollTo }) {
                                 setUserReviews(prev => prev.filter(rr => rr._id !== r._id));
                                 addNotification({ id: Date.now(), text: 'Review deleted' });
                               } catch (e) { console.error(e); addNotification({ id: Date.now(), text: 'Network error' }); }
-                            }} style={{ background: 'transparent', border: '1px solid #E5E7EB', padding: '0.4rem 0.6rem', borderRadius: '0.35rem' }}>Delete</button>
+                            }} className="bg-transparent border border-caramel/30 text-darkBrown px-2 py-1 rounded-md hover:bg-beige/30 transition-colors">Delete</button>
                           </div>
                         </div>
                       ))}

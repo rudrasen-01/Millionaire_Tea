@@ -132,8 +132,8 @@ export function Profile() {
           animate={{ opacity: 1, y: 0 }}
           className="relative overflow-hidden rounded-2xl mb-6"
           style={{
-            background: 'linear-gradient(135deg, #FF9933 0%, #FF8C00 50%, #FFA500 100%)',
-            boxShadow: '0 20px 60px rgba(255, 153, 51, 0.3)',
+            background: 'linear-gradient(135deg, #B87333 0%, #4A2C2A 50%, #B87333 100%)',
+            boxShadow: '0 20px 60px rgba(184, 115, 51, 0.3)',
           }}
         >
           {/* Animated background orbs */}
@@ -420,7 +420,7 @@ export function Profile() {
               }}
             >
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <User className="w-5 h-5 text-orange-500" />
+                <User className="w-5 h-5 text-caramel" />
                 Personal Information
               </h2>
 
@@ -470,7 +470,7 @@ export function Profile() {
               }}
             >
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-orange-500" />
+                <TrendingUp className="w-5 h-5 text-caramel" />
                 Your Statistics
               </h2>
 
@@ -479,19 +479,19 @@ export function Profile() {
                   icon={Star}
                   label="Total Points"
                   value={(user?.points || 0).toLocaleString()}
-                  color="#FF9933"
+                  color="#B87333"
                 />
                 <StatCard
                   icon={Award}
                   label="Rank"
                   value={`#${user?.rank || user?.rankPosition || '-'}`}
-                  color="#FF8C00"
+                  color="#4A2C2A"
                 />
                 <StatCard
                   icon={Gift}
                   label="Reviews"
                   value={totalReviews}
-                  color="#FFA500"
+                  color="#B87333"
                 />
                 <StatCard
                   icon={CheckCircle}
@@ -517,7 +517,7 @@ export function Profile() {
               }}
             >
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-orange-500" />
+                <Shield className="w-5 h-5 text-caramel" />
                 Account Status
               </h3>
 
@@ -555,7 +555,7 @@ export function Profile() {
               }}
             >
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-orange-500" />
+                <Clock className="w-5 h-5 text-caramel" />
                 Recent Activity
               </h3>
 
@@ -589,7 +589,7 @@ function InfoField({ icon: Icon, label, value, isEditing, onChange, placeholder 
   return (
     <div className="flex items-start gap-3">
       <div className="mt-1 p-2 rounded-lg" style={{ background: '#FFF7ED' }}>
-        <Icon className="w-5 h-5 text-orange-500" />
+        <Icon className="w-5 h-5 text-caramel" />
       </div>
       <div className="flex-1">
         <label className="text-sm text-gray-500 mb-1 block">{label}</label>
@@ -599,7 +599,7 @@ function InfoField({ icon: Icon, label, value, isEditing, onChange, placeholder 
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caramel"
           />
         ) : (
           <p className="text-gray-900 font-medium">
@@ -618,7 +618,7 @@ function StatCard({ icon: Icon, label, value, color }) {
       className="p-4 rounded-xl text-center"
       style={{
         background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
-        border: '1px solid rgba(255, 153, 51, 0.2)',
+        border: '1px solid rgba(184, 115, 51, 0.2)',
       }}
     >
       <Icon className="w-6 h-6 mx-auto mb-2" style={{ color }} />
@@ -646,7 +646,7 @@ function ActivityItem({ icon: Icon, text, time }) {
   return (
     <div className="flex items-start gap-3 py-2">
       <div className="p-1.5 rounded-lg" style={{ background: '#FFF7ED' }}>
-        <Icon className="w-4 h-4 text-orange-500" />
+        <Icon className="w-4 h-4 text-caramel" />
       </div>
       <div className="flex-1">
         <p className="text-sm text-gray-900">{text}</p>

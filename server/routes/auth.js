@@ -95,6 +95,23 @@ router.post(
 
       res.cookie('token', token, cookieOptions);
 
+      // notify admins about new user registration (emit only to admins room)
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          io.to('admins').emit('admin:newUser', { id: user._id, name: user.name || '', email: user.email || '' });
+        }
+        // persist admin notification for UI and audit
+        try {
+          const AdminNotification = require('../models/AdminNotification');
+          const msg = `New user registered: ${user.name || user.email || user._id}`;
+          const an = await AdminNotification.create({ actorUserId: user._id, actorName: user.name || '', action: 'user:registered', message: msg, details: { email: user.email }, createdAt: new Date() });
+          try { if (io) io.to('admins').emit('admin:notification', an); } catch (e) { /* ignore */ }
+        } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
+
       return res.status(201).json({
         message: 'Registration successful',
         user: {
@@ -188,7 +205,8 @@ router.get('/me', auth, async (req, res) => {
         teasConsumed: user.teasConsumed || 0,
         profileImage: user.profileImage,
         avatar: user.profileImage || null,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        notifications: (user.notifications || []).slice().reverse()
       }
     });
 

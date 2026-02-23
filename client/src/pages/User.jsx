@@ -1,13 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User as UserIcon, Search, Eye } from 'lucide-react';
 import { PrimaryButton, IconButton } from '../components/buttons/PrimaryButton';
 import { KPICard } from '../components/charts/ProgressChart';
 import { useApp } from '../context/AppContext';
 
+function formatDate(d) {
+  const dt = new Date(d);
+  const pad = (v) => String(v).padStart(2, '0');
+  return `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}/${dt.getFullYear()} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+
 export function User() {
-  const { user, adminKPIs, isLoading, setCurrentPage, setUser, addNotification } = useApp();
+  const { user, adminKPIs, isLoading, setCurrentPage, setUser, addNotification, notifications } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!mounted) return;
+        if (res.ok) {
+          const d = await res.json();
+          try { console.debug('[User.jsx] /api/auth/me ->', d); } catch(e){}
+          if (d?.user) setUser(d.user);
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [setUser]);
 
   const handleClaim = async () => {
     if (!user) return;
@@ -54,10 +78,10 @@ export function User() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <KPICard title="Approx. Avg Points" value={adminKPIs.avgUserPoints} change={3.2} icon={UserIcon} color="tea-amber" />
-          <KPICard title="Your Rank" value={user?.rank ?? user?.rankPosition ?? '-'} change={0.5} icon={UserIcon} color="tea-brown" />
-          <KPICard title="Total Rewards Issued" value={adminKPIs.totalRewardsIssued} change={1.2} icon={UserIcon} color="tea-gold" />
-          <KPICard title="Total Revenue" value={`$${adminKPIs.totalRevenue}`} change={2.1} icon={UserIcon} color="tea-amber" />
+          <KPICard title="Approx. Avg Points" value={adminKPIs.avgUserPoints} change={3.2} icon={UserIcon} color="caramel" />
+          <KPICard title="Your Rank" value={user?.rank ?? user?.rankPosition ?? '-'} change={0.5} icon={UserIcon} color="darkBrown" />
+          <KPICard title="Total Rewards Issued" value={adminKPIs.totalRewardsIssued} change={1.2} icon={UserIcon} color="caramel" />
+          <KPICard title="Total Revenue" value={`$${adminKPIs.totalRevenue}`} change={2.1} icon={UserIcon} color="caramel" />
         </div>
 
         <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 mb-8 shadow-xl hover:shadow-2xl transition-all hover:border-caramel">
@@ -75,6 +99,32 @@ export function User() {
                 Withdraw
               </PrimaryButton>
             </div>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div className="bg-gradient-to-br from-cream to-warmWhite border-2 border-caramel/40 rounded-3xl p-6 mb-8 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-baloo font-bold text-darkBrown">Notifications</h2>
+          </div>
+          {user && notifications && notifications.length === 0 && (
+            <div className="text-sm text-darkBrown/70">No notifications</div>
+          )}
+          <div className="space-y-3">
+            {notifications && notifications.map((n) => (
+              <div key={n.id || n._id} className={`p-3 border-2 border-caramel/30 rounded-lg bg-warmWhite ${n.read ? 'opacity-60' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-darkBrown">{n.message || n.text}</div>
+                    <div className="text-xs text-darkBrown/70">Points added: {typeof n.rewardPointsAdded === 'number' ? `+${n.rewardPointsAdded}` : '-'} • Total: {typeof n.totalPoints === 'number' ? n.totalPoints : '-'}</div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="text-xs text-caramel">{n.createdAt ? formatDate(n.createdAt) : ''}</div>
+                    <div className="mt-2 text-xs text-darkBrown/70">{n.read ? 'Read' : ''}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

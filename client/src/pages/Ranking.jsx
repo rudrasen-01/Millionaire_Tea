@@ -163,7 +163,7 @@ export function Ranking() {
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-amber focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent"
               />
             </div>
             
@@ -172,7 +172,7 @@ export function Ranking() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-amber focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-caramel focus:border-transparent"
               >
                 <option value="rank">Sort by Rank</option>
                 <option value="points">Sort by Points</option>
@@ -220,7 +220,7 @@ export function Ranking() {
               key={topUser.id}
               className={`
                 glass-card p-6 text-center relative overflow-hidden
-                ${index === 0 ? 'rank-1' : index === 1 ? 'border-l-4 border-gray-400' : 'border-l-4 border-orange-400'}
+                ${index === 0 ? 'rank-1' : index === 1 ? 'border-l-4 border-gray-400' : 'border-l-4 border-caramel'}
               `}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -229,13 +229,13 @@ export function Ranking() {
             >
               {index === 0 && (
                 <div className="absolute top-2 right-2">
-                  <Crown className="w-8 h-8 text-yellow-300" />
+                  <Crown className="w-8 h-8 text-luxury-gold" />
                 </div>
               )}
               
               <div className="mb-4">
                 <div className={`w-20 h-20 mx-auto rounded-full border-4 ${
-                  index === 0 ? 'border-yellow-300' : index === 1 ? 'border-gray-400' : 'border-orange-400'
+                  index === 0 ? 'border-luxury-gold' : index === 1 ? 'border-gray-400' : 'border-caramel'
                 } overflow-hidden`}>
                   <img 
                     src={topUser.avatar} 
@@ -265,7 +265,7 @@ export function Ranking() {
               
               {topUser.id === user.id && (
                 <div className={`mt-2 px-2 py-1 rounded-full text-xs font-semibold ${
-                  index === 0 ? 'bg-white/20 text-white' : 'bg-tea-amber/20 text-tea-brown'
+                  index === 0 ? 'bg-white/20 text-white' : 'bg-caramel/20 text-darkBrown'
                 }`}>
                   You
                 </div>
@@ -277,7 +277,7 @@ export function Ranking() {
         {/* Claim Prize Button for Rank 1 */}
         {user.rank === 1 && (
             <motion.div
-              className="glass-card p-6 mb-8 bg-gradient-to-r from-tea-gold/20 to-yellow-400/20 border-2 border-tea-gold"
+              className="glass-card p-6 mb-8 bg-gradient-to-r from-luxury-gold/20 to-caramel/20 border-2 border-luxury-gold"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.4 }}
@@ -303,7 +303,7 @@ export function Ranking() {
         >
           <h2 className="text-xl font-bold text-gray-900 mb-6">All Rankings</h2>
           
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-hidden">
             <AnimatePresence>
               {filteredAndSortedUsers.map((rankUser, index) => (
                 <RankCard

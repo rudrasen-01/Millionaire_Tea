@@ -59,15 +59,139 @@ function appReducer(state, action) {
       return { ...state, darkMode: action.payload };
     
     case 'ADD_NOTIFICATION':
+      // Ensure notification has createdAt timestamp for proper sorting
+      const notificationWithTimestamp = {
+        ...action.payload,
+        createdAt: action.payload.createdAt || new Date().toISOString()
+      };
+      
+      const msg = (notificationWithTimestamp.message || notificationWithTimestamp.text || '').toString().toLowerCase();
+      
+      // Filter notifications based on user role
+      if (state.user) {
+        const isAdmin = state.user.role === 'admin' || state.user.role === 'superadmin';
+        
+        // Check for admin-only message patterns
+        const isAdminOnlyMsg = msg.includes('withdrawal request from') || 
+                                msg.includes('new review submitted by') ||
+                                msg.includes('new user registered:');
+        
+        if (isAdmin) {
+          // Filter out tea purchase notifications for admins
+          if (msg.includes('tea purchase') || 
+              msg.includes('quantity added') || 
+              msg.includes('points earned')) {
+            // Do not add tea purchase notifications to admin state
+            return state;
+          }
+        } else {
+          // For regular users, ONLY show tea purchase notifications
+          // Block all admin-only messages
+          if (isAdminOnlyMsg) {
+            return state;
+          }
+          
+          const isTeaPurchaseNotif = msg.includes('tea purchase') || 
+                                      msg.includes('quantity added') || 
+                                      msg.includes('points earned');
+          if (!isTeaPurchaseNotif) {
+            // Do not add non-tea-purchase notifications to user state
+            return state;
+          }
+        }
+      }
+      
       return {
         ...state,
-        notifications: [action.payload, ...state.notifications]
+        notifications: [notificationWithTimestamp, ...state.notifications]
+      };
+    case 'SET_NOTIFICATIONS':
+      // Merge with existing notifications to preserve socket-based notifications
+      // that may have arrived before the fetch
+      const existingIds = new Set(state.notifications.map(n => n.id || n._id));
+      let newNotifs = action.payload.filter(n => !existingIds.has(n.id || n._id));
+      
+      // Filter notifications based on user role
+      if (state.user) {
+        const isAdmin = state.user.role === 'admin' || state.user.role === 'superadmin';
+        
+        if (isAdmin) {
+          // Filter out tea purchase notifications for admins
+          newNotifs = newNotifs.filter(n => {
+            const msg = (n.message || n.text || '').toString().toLowerCase();
+            return !(msg.includes('tea purchase') || 
+                     msg.includes('quantity added') || 
+                     msg.includes('points earned'));
+          });
+        } else {
+          // For regular users, ONLY show tea purchase notifications
+          // Block all admin-only messages
+          newNotifs = newNotifs.filter(n => {
+            const msg = (n.message || n.text || '').toString().toLowerCase();
+            
+            // Block admin-only messages
+            if (msg.includes('withdrawal request from') || 
+                msg.includes('new review submitted by') ||
+                msg.includes('new user registered:')) {
+              return false;
+            }
+            
+            return msg.includes('tea purchase') || 
+                   msg.includes('quantity added') || 
+                   msg.includes('points earned');
+          });
+        }
+      }
+      
+      return { ...state, notifications: [...state.notifications, ...newNotifs] };
+    case 'TAG_ADMIN_CONFIRMATIONS':
+      return {
+        ...state,
+        notifications: state.notifications.map(n => {
+          const txt = (n.message || n.text || '').toString();
+          if (txt.startsWith(action.payload.prefix)) return { ...n, adminConfirmation: true };
+          return n;
+        })
+      };
+    case 'MARK_NOTIFICATION_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(n => n.id === action.payload || n._id === action.payload ? { ...n, read: true } : n)
       };
     
     case 'REMOVE_NOTIFICATION':
       return {
         ...state,
         notifications: state.notifications.filter(n => n.id !== action.payload)
+      };
+    
+    case 'CLEANUP_NOTIFICATIONS_BY_ROLE':
+      // Remove inappropriate notifications based on user role
+      if (!state.user) return state;
+      
+      const isAdmin = state.user.role === 'admin' || state.user.role === 'superadmin';
+      
+      return {
+        ...state,
+        notifications: state.notifications.filter(n => {
+          const msg = (n.message || n.text || '').toString().toLowerCase();
+          const isTeaPurchaseNotif = msg.includes('tea purchase') || 
+                                      msg.includes('quantity added') || 
+                                      msg.includes('points earned');
+          
+          const isAdminOnlyMsg = msg.includes('withdrawal request from') || 
+                                  msg.includes('new review submitted by') ||
+                                  msg.includes('new user registered:');
+          
+          if (isAdmin) {
+            // Admins: remove tea purchase notifications
+            return !isTeaPurchaseNotif;
+          } else {
+            // Regular users: remove admin messages and keep ONLY tea purchase notifications
+            if (isAdminOnlyMsg) return false;
+            return isTeaPurchaseNotif;
+          }
+        })
       };
     
     case 'SHOW_TOOLTIP':
@@ -213,6 +337,90 @@ export function AppProvider({ children }) {
     return () => clearInterval(id);
   }, []);
 
+  // fetch user notifications when user becomes available
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch('/api/rewards/notifications', { credentials: 'include' });
+      if (res && res.ok) {
+        const b = await res.json();
+        let notifs = (b.notifications || []).map(n => ({ ...n, id: n._id || n.id }));
+        
+        const isAdmin = state.user && (state.user.role === 'admin' || state.user.role === 'superadmin');
+        
+        // Filter notifications based on user role
+        if (state.user) {
+          notifs = notifs.filter(n => {
+            const msg = (n.message || n.text || '').toString().toLowerCase();
+            const isTeaPurchaseNotif = msg.includes('tea purchase') || 
+                                        msg.includes('quantity added') ||
+                                        msg.includes('points earned');
+            
+            const isAdminOnlyMsg = msg.includes('withdrawal request from') || 
+                                    msg.includes('new review submitted by') ||
+                                    msg.includes('new user registered:');
+            
+            if (isAdmin) {
+              // Admins: exclude tea purchase notifications
+              return !isTeaPurchaseNotif;
+            } else {
+              // Regular users: block admin messages and include ONLY tea purchase notifications
+              if (isAdminOnlyMsg) return false;
+              return isTeaPurchaseNotif;
+            }
+          });
+        }
+        
+        // if current user is admin, also fetch persisted admin notifications
+        if (isAdmin) {
+          try {
+            const ares = await fetch('/api/rewards/admin/notifications', { credentials: 'include' });
+            if (ares && ares.ok) {
+              const ab = await ares.json();
+              const adminNotifs = (ab.notifications || [])
+                .map(n => ({ ...n, id: n._id || n.id, adminNotification: true }))
+                // Filter out unwanted messages to avoid cluttering admin notifications
+                .filter(n => {
+                  const msg = (n.message || n.msg || '').toString().toLowerCase();
+                  return !msg.startsWith('notification sent to') && 
+                         !msg.includes('tea purchase') &&
+                         !msg.includes('quantity added') &&
+                         !msg.includes('points earned');
+                });
+              // merge admin notifications before user notifications so they appear on top
+              notifs = [...adminNotifs, ...notifs];
+            }
+          } catch (e) { /* ignore admin fetch errors */ }
+        }
+        dispatch({ type: 'SET_NOTIFICATIONS', payload: notifs });
+      }
+    } catch (e) {
+      console.error('Failed to fetch notifications', e);
+    }
+  };
+
+  useEffect(() => {
+    if (state.user) {
+      fetchNotifications();
+      // Cleanup inappropriate notifications based on user role
+      dispatch({ type: 'CLEANUP_NOTIFICATIONS_BY_ROLE' });
+    }
+  }, [state.user]);
+
+  const markNotificationRead = async (id) => {
+    try {
+      dispatch({ type: 'MARK_NOTIFICATION_READ', payload: id });
+      // determine if this is an admin notification
+      const current = state.notifications.find(n => String(n.id || n._id) === String(id));
+      if (current && current.adminNotification) {
+        await fetch(`/api/rewards/admin/notifications/${id}/read`, { method: 'POST', credentials: 'include' });
+      } else {
+        await fetch(`/api/rewards/notifications/${id}/read`, { method: 'POST', credentials: 'include' });
+      }
+    } catch (e) {
+      console.error('Failed to mark notification read', e);
+    }
+  };
+
   useEffect(() => {
     const onRanks = (e) => {
       if (e?.detail) dispatch({ type: 'SET_ALL_USERS', payload: e.detail });
@@ -226,62 +434,226 @@ export function AppProvider({ children }) {
     const apiUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : 'http://localhost:5001';
     const socket = ioClient(apiUrl, { withCredentials: true });
     socket.on('connect', () => console.log('socket connected', socket.id));
+    
+    // Dashboard updates - refresh data for current user
     socket.on('dashboard:update', (payload) => {
-      // refresh app data when dashboard updates
       try { fetchAppData(); } catch(e) { /* ignore */ }
       if (payload.user && state.user && String(payload.user.id) === String(state.user._id || state.user.id)) {
         dispatch({ type: 'UPDATE_USER_POINTS', payload: payload.user.points - (state.user.points || 0) });
         dispatch({ type: 'UPDATE_USER_RANK', payload: payload.user.rankPosition });
       }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'Dashboard updated', type: 'info' } });
     });
+    
+    // Withdrawal created - notify BOTH the requesting user AND admins
     socket.on('withdrawal:created', (payload) => {
-      // if the event belongs to the current user, refresh their withdrawals
-      try { if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals(); } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'Withdrawal request created', type: 'success' } });
+      try {
+        if (!payload) return;
+        // Notify the requesting user
+        if (state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: 'Your withdrawal request was created',
+            read: false
+          }});
+        }
+        // Separately notify admins about new withdrawal requests
+        else if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: 'New withdrawal request received',
+            read: false,
+            adminNotification: true
+          }});
+        }
+      } catch (e) { /* ignore */ }
     });
+    
+    // Withdrawal status updates - notify ONLY the requesting user
     socket.on('withdrawal:accepted', (payload) => {
       try {
-        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
-        // if current user is admin, refresh admin list
-        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
+        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: 'Your withdrawal request was accepted',
+            read: false
+          }});
+        }
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'A withdrawal request was accepted', type: 'success' } });
     });
+    
     socket.on('withdrawal:confirmed', (payload) => {
       try {
-        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
-        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
+        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: 'Your withdrawal was confirmed',
+            read: false
+          }});
+        }
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'A withdrawal was confirmed', type: 'success' } });
     });
+    
     socket.on('withdrawal:paid', (payload) => {
       try {
-        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) fetchUserWithdrawals();
-        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) fetchAdminWithdrawals();
+        if (payload && state.user && String(payload.userId) === String(state.user._id || state.user.id)) {
+          fetchUserWithdrawals();
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: 'Your withdrawal was marked paid',
+            read: false
+          }});
+        }
       } catch (e) { /* ignore */ }
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'A withdrawal was marked paid', type: 'success' } });
     });
+    
+    // Reward transferred - notify ONLY the winner user
     socket.on('reward:transferred', (info) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: `Reward transferred: ${info.amount}`, type: 'success' } });
-      // If current user is admin, refresh admin awards and notify admin UI listeners
-      (async () => {
-        try {
-          if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
-            const res = await fetch('/api/rewards/admin/awards', { credentials: 'include' });
-            if (res && res.ok) {
-              const b = await res.json();
-              try { window.dispatchEvent(new CustomEvent('app:awardsUpdated', { detail: b.awards || [] })); } catch (e) { /* ignore */ }
+      try {
+        if (state.user && String(info.winnerId) === String(state.user._id || state.user.id)) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: `Reward transferred: ${info.amount} points`,
+            read: false
+          }});
+        }
+        // Refresh admin awards data if current user is admin (no notification)
+        (async () => {
+          try {
+            if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+              const res = await fetch('/api/rewards/admin/awards', { credentials: 'include' });
+              if (res && res.ok) {
+                const b = await res.json();
+                try { window.dispatchEvent(new CustomEvent('app:awardsUpdated', { detail: b.awards || [] })); } catch (e) { /* ignore */ }
+              }
+            }
+          } catch (e) { /* ignore */ }
+        })();
+      } catch (e) { /* ignore */ }
+    });
+    
+    // User-specific notifications - filter based on user role
+    socket.on('user:notification', (notif) => {
+      try {
+        if (!notif) return;
+        // Only add notification if current user is the exact target user
+        if (state.user && String(notif.userId) === String(state.user._id || state.user.id)) {
+          const isAdmin = state.user.role === 'admin' || state.user.role === 'superadmin';
+          const message = notif.message || notif.text || 'Notification';
+          const msgLower = message.toLowerCase();
+          
+          const isTeaPurchase = msgLower.includes('tea purchase') || 
+                                msgLower.includes('quantity added') || 
+                                msgLower.includes('points earned');
+          
+          const isAdminOnlyMsg = msgLower.includes('withdrawal request from') || 
+                                  msgLower.includes('new review submitted by') ||
+                                  msgLower.includes('new user registered:');
+          
+          // Update user points if present (regardless of notification display)
+          if (typeof notif.totalPoints === 'number') {
+            dispatch({ type: 'SET_USER', payload: { ...state.user, points: notif.totalPoints } });
+          }
+          
+          // Filter notification based on role
+          if (isAdmin && isTeaPurchase) {
+            // Admins: skip tea purchase notifications
+            return;
+          }
+          
+          if (!isAdmin) {
+            // Regular users: block admin messages
+            if (isAdminOnlyMsg) {
+              return;
+            }
+            // Regular users: skip non-tea-purchase notifications
+            if (!isTeaPurchase) {
+              return;
             }
           }
-        } catch (e) { /* ignore */ }
-      })();
+          
+          // Add the notification
+          const payload = {
+            id: Date.now() + Math.random(),
+            message: message,
+            quantity: notif.quantity,
+            rewardPointsAdded: notif.rewardPointsAdded,
+            totalPoints: notif.totalPoints,
+            createdAt: notif.createdAt || new Date().toISOString(),
+            read: false
+          };
+          dispatch({ type: 'ADD_NOTIFICATION', payload });
+        }
+      } catch (e) { /* ignore */ }
     });
+    
+    // User claim processed - notify ONLY the affected user
     socket.on('user:claimed', (info) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: `User claimed ${info.amount}`, type: 'success' } });
+      try {
+        if (state.user && String(info.userId) === String(state.user._id || state.user.id)) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: `Your claim processed: ${info.amount}`,
+            read: false
+          }});
+        }
+      } catch (e) { /* ignore */ }
     });
+
+    // Admin config updates - notify ONLY admins
     socket.on('admin:configUpdated', (cfg) => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: Date.now(), message: 'Admin config updated', type: 'info' } });
+      try {
+        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          dispatch({ type: 'ADD_NOTIFICATION', payload: { 
+            id: Date.now() + Math.random(), 
+            message: 'Admin configuration updated',
+            read: false,
+            adminNotification: true
+          }});
+        }
+      } catch (e) { /* ignore */ }
+    });
+
+    // Admin new user registration - handled by persisted admin:notification
+    socket.on('admin:newUser', (u) => {
+      try {
+        // Server emits persisted admin:notification - no duplicate needed here
+      } catch (e) { /* ignore */ }
+    });
+
+    // Admin new review - handled by persisted admin:notification
+    socket.on('admin:newReview', (r) => {
+      try {
+        // Server emits persisted admin:notification - no duplicate needed here
+      } catch (e) { /* ignore */ }
+    });
+    
+    // Admin notification sent confirmation - DO NOT show as notification to avoid spam
+    // Admins should not see "notification sent to user" messages for tea purchases
+    socket.on('admin:notificationSent', (p) => {
+      try {
+        // This event is used to confirm notification delivery but should not create admin notifications
+        // to avoid cluttering admin notification panel with tea purchase confirmations
+      } catch (e) { /* ignore */ }
+    });
+
+    // Admin-specific persisted notifications - notify ONLY admins
+    socket.on('admin:notification', (n) => {
+      try {
+        if (state.user && (state.user.role === 'admin' || state.user.role === 'superadmin')) {
+          const payload = {
+            id: n._id || n.id || (Date.now() + Math.random()),
+            message: n.message || n.msg || 'Admin notification',
+            createdAt: n.createdAt || new Date().toISOString(),
+            adminNotification: true,
+            read: !!n.read,
+            details: n.details || {}
+          };
+          dispatch({ type: 'ADD_NOTIFICATION', payload });
+        }
+      } catch (e) { /* ignore */ }
     });
 
     return () => {
@@ -294,6 +666,8 @@ export function AppProvider({ children }) {
     ...state,
     dispatch,
     fetchUserWithdrawals,
+    fetchNotifications,
+    markNotificationRead,
     setUser: (user) => dispatch({ type: 'SET_USER', payload: user }),
     updateUserPoints: (points) => dispatch({ type: 'UPDATE_USER_POINTS', payload: points }),
     setCurrentPage: (page) => dispatch({ type: 'SET_PAGE', payload: page }),

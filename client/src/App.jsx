@@ -5,11 +5,11 @@ import {
   Wallet, 
   Trophy, 
   Target, 
-  Settings, 
   Menu, 
   X, 
   Coffee,
   Star,
+  Bell,
   MessageSquare,
   LogOut,
   ArrowLeft,
@@ -19,9 +19,6 @@ import {
   TrendingUp,
   DollarSign,
   UserCircle,
-  Moon,
-  Sun,
-  Bell,
   Check
 } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
@@ -33,19 +30,18 @@ import { Ranking } from './pages/Ranking';
 import { Admin } from './pages/Admin';
 import { User } from './pages/User';
 import { Profile } from './pages/Profile';
+import Notifications from './pages/Notifications';
 import { PanelSelector } from './pages/PanelSelector';
 import { LandingPage } from './pages/LandingPage';
 import { Register } from './pages/Register';
 import { Login } from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { IconButton } from './components/buttons/PrimaryButton';
-import { ToastContainer } from './components/notifications/Toast';
 import { ScrollToTop } from './components/buttons/ScrollToTop';
 
 function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobileMenuOpen, darkMode }) {
   const { user, setUser, notifications, removeNotification } = useApp();
   const navigate = useNavigate();
-  const [showNotifications, setShowNotifications] = useState(false);
   
   let navigation;
   if (user && user.role === 'admin') {
@@ -91,19 +87,19 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
               border: 'none',
               cursor: 'pointer',
               background: isActive 
-                ? 'linear-gradient(to right, #FF9933, #FF8C00)' 
+                ? 'linear-gradient(to right, #B87333, #4A2C2A)' 
                 : 'transparent',
               color: isActive 
                 ? 'white' 
                 : (darkMode ? '#D1D5DB' : '#374151'),
               boxShadow: isActive 
-                ? '0 10px 25px -5px rgba(255, 153, 51, 0.3)' 
+                ? '0 10px 25px -5px rgba(184, 115, 51, 0.3)' 
                 : 'none'
             }}
             onMouseEnter={(e) => {
               if (!isActive) {
-                e.target.style.backgroundColor = darkMode ? 'rgba(255, 153, 51, 0.15)' : 'rgba(255, 153, 51, 0.1)';
-                e.target.style.color = '#FF8C00';
+                e.target.style.backgroundColor = darkMode ? 'rgba(184, 115, 51, 0.15)' : 'rgba(184, 115, 51, 0.1)';
+                e.target.style.color = '#B87333';
               }
             }}
             onMouseLeave={(e) => {
@@ -127,21 +123,21 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="w-64 border-r h-screen sticky top-0 overflow-y-auto" style={{
           background: darkMode ? '#1F2937' : 'white',
-          borderColor: darkMode ? '#374151' : 'rgba(255, 153, 51, 0.1)',
+          borderColor: darkMode ? '#374151' : 'rgba(184, 115, 51, 0.1)',
           boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
           transition: 'all 0.3s ease'
         }}>
           <div className="flex flex-col h-full">
             {/* Logo */}
             <div className="flex items-center p-6 border-b" style={{
-              borderColor: darkMode ? '#374151' : 'rgba(255, 153, 51, 0.1)',
+              borderColor: darkMode ? '#374151' : 'rgba(184, 115, 51, 0.1)',
               transition: 'border-color 0.3s ease'
             }}>
-              <div className="w-10 h-10 bg-gradient-to-br from-vendor-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-br from-caramel to-darkBrown rounded-xl flex items-center justify-center shadow-lg">
                 <Coffee className="w-6 h-6 text-white" />
               </div>
               <div className="ml-3">
-                <h2 className="text-lg font-bold bg-gradient-to-r from-vendor-600 to-orange-600 bg-clip-text text-transparent">
+                <h2 className="text-lg font-bold bg-gradient-to-r from-caramel to-darkBrown bg-clip-text text-transparent">
                   Millionaire Chai
                 </h2>
                 <p className="text-xs font-medium" style={{
@@ -151,85 +147,25 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
               </div>
             </div>
 
-            {/* Notifications Bell */}
-            <div className="px-4 pt-6 pb-2">
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="relative w-full flex items-center p-3 rounded-xl transition-all"
-                style={{
-                  background: showNotifications ? 'rgba(255, 153, 51, 0.1)' : 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: darkMode ? '#D1D5DB' : '#374151'
-                }}
-                onMouseEnter={(e) => {
-                  if (!showNotifications) {
-                    e.target.style.backgroundColor = 'rgba(255, 153, 51, 0.05)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!showNotifications) {
-                    e.target.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                <Bell className="w-5 h-5" />
-                <span className="ml-3 font-medium">Notifications</span>
-                {notifications && notifications.length > 0 && (
-                  <span className="ml-auto bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
-                    {notifications.length}
-                  </span>
-                )}
-              </button>
-              
-              {/* Notifications Dropdown */}
-              {showNotifications && (
-                <div className="mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-orange-100 dark:border-gray-700 max-h-96 overflow-y-auto">
-                  {notifications && notifications.length > 0 ? (
-                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                      {notifications.slice(0, 5).map((notif) => (
-                        <div
-                          key={notif.id}
-                          className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="flex-1">
-                              <p className="text-sm text-gray-700 dark:text-gray-300">{notif.message}</p>
-                            </div>
-                            <button
-                              onClick={() => removeNotification(notif.id)}
-                              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                              title="Mark as read"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      {notifications.length > 5 && (
-                        <div className="p-2 text-center text-xs text-gray-500">
-                          +{notifications.length - 5} more notifications
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-                      <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No notifications</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
             {/* Navigation */}
             <nav className="flex-1 px-4 py-2 space-y-2">
               <NavItems />
             </nav>
 
             {/* User Section */}
-            <div style={{ padding: '1rem', borderTop: '1px solid rgba(255, 153, 51, 0.2)' }}>
-              <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(24px)', borderRadius: '1rem', padding: '1rem', border: '1px solid rgba(255, 153, 51, 0.1)' }}>
+            <div style={{ padding: '1rem', borderTop: '1px solid rgba(184, 115, 51, 0.2)' }}>
+              <div 
+                onClick={() => setCurrentPage('profile')}
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                  backdropFilter: 'blur(24px)', 
+                  borderRadius: '1rem', 
+                  padding: '1rem', 
+                  border: '1px solid rgba(184, 115, 51, 0.1)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   {user?.avatar ? (
                     <img
@@ -241,7 +177,7 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                     <div style={{ 
                       width: '2.5rem', 
                       height: '2.5rem', 
-                      background: 'linear-gradient(to bottom right, #FF9933, #FF8C00)', 
+                      background: 'linear-gradient(to bottom right, #B87333, #4A2C2A)', 
                       borderRadius: '50%', 
                       display: 'flex', 
                       alignItems: 'center', 
@@ -256,19 +192,21 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                         <div style={{ marginLeft: '0.75rem', flex: 1 }}>
                           <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1F2937' }}>{user.name}</div>
                             {user.role !== 'admin' && (
-                              <div style={{ fontSize: '0.75rem', color: '#FF8C00', fontWeight: '500' }}>{user.rank}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#B87333', fontWeight: '500' }}>{user.rank}</div>
                             )}
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          {/* notifications UI removed per admin preference */}
                           {user.isVip && (
                             <Crown style={{ width: '1.25rem', height: '1.25rem', color: '#EAB308' }} />
                           )}
                           <button
-                            onClick={async () => {
+                            onClick={async (e) => {
+                              e.stopPropagation(); // Prevent profile navigation
                               try {
                                 await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                              } catch (e) {
-                                console.error('Logout failed', e);
+                              } catch (err) {
+                                console.error('Logout failed', err);
                               }
                               setUser(null);
                               navigate('/');
@@ -276,7 +214,7 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                             title="Logout"
                             style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
                           >
-                            <LogOut style={{ width: '1rem', height: '1rem', color: '#FF6B35' }} />
+                            <LogOut style={{ width: '1rem', height: '1rem', color: '#B87333' }} />
                           </button>
                         </div>
                 </div>
@@ -320,19 +258,19 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                   alignItems: 'center', 
                   justifyContent: 'space-between', 
                   padding: '1.5rem', 
-                  borderBottom: `1px solid ${darkMode ? '#374151' : 'rgba(255, 153, 51, 0.2)'}`,
+                  borderBottom: `1px solid ${darkMode ? '#374151' : 'rgba(184, 115, 51, 0.2)'}`,
                   transition: 'border-color 0.3s ease'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <div style={{ 
                       width: '2.5rem', 
                       height: '2.5rem', 
-                      background: 'linear-gradient(to bottom right, #FF9933, #FF8C00)', 
+                      background: 'linear-gradient(to bottom right, #B87333, #4A2C2A)', 
                       borderRadius: '0.75rem', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
-                      boxShadow: '0 10px 25px -5px rgba(255, 153, 51, 0.3)'
+                      boxShadow: '0 10px 25px -5px rgba(184, 115, 51, 0.3)'
                     }}>
                       <Coffee style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
                     </div>
@@ -340,7 +278,7 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                       <h2 style={{ 
                         fontSize: '1.125rem', 
                         fontWeight: 'bold', 
-                        background: 'linear-gradient(to right, #FF9933, #FF8C00)', 
+                        background: 'linear-gradient(to right, #B87333, #4A2C2A)', 
                         WebkitBackgroundClip: 'text', 
                         WebkitTextFillColor: 'transparent', 
                         backgroundClip: 'text'
@@ -359,120 +297,11 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                       cursor: 'pointer',
                       transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 153, 51, 0.1)'}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(184, 115, 51, 0.1)'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
-                    <X style={{ width: '1.25rem', height: '1.25rem', color: '#FF8C00' }} />
+                    <X style={{ width: '1.25rem', height: '1.25rem', color: '#B87333' }} />
                   </button>
-                </div>
-
-                {/* Mobile Notifications Bell */}
-                <div style={{ padding: '0 1rem' }}>
-                  <button
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '0.75rem',
-                      borderRadius: '0.75rem',
-                      background: showNotifications ? 'rgba(255, 153, 51, 0.1)' : 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: darkMode ? '#D1D5DB' : '#374151',
-                      fontWeight: '500',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!showNotifications) {
-                        e.target.style.backgroundColor = 'rgba(255, 153, 51, 0.05)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!showNotifications) {
-                        e.target.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    <Bell style={{ width: '1.25rem', height: '1.25rem' }} />
-                    <span style={{ marginLeft: '0.75rem' }}>Notifications</span>
-                    {notifications && notifications.length > 0 && (
-                      <span style={{
-                        marginLeft: 'auto',
-                        background: 'linear-gradient(to right, #EF4444, #F97316)',
-                        color: 'white',
-                        fontSize: '0.75rem',
-                        fontWeight: 'bold',
-                        borderRadius: '9999px',
-                        width: '1.5rem',
-                        height: '1.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                      }}>
-                        {notifications.length}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {/* Mobile Notifications Dropdown */}
-                  {showNotifications && (
-                    <div style={{
-                      marginTop: '0.5rem',
-                      background: darkMode ? '#374151' : 'white',
-                      borderRadius: '0.75rem',
-                      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                      border: `1px solid ${darkMode ? '#4B5563' : 'rgba(255, 153, 51, 0.1)'}`,
-                      maxHeight: '24rem',
-                      overflowY: 'auto'
-                    }}>
-                      {notifications && notifications.length > 0 ? (
-                        <div>
-                          {notifications.slice(0, 5).map((notif) => (
-                            <div
-                              key={notif.id}
-                              style={{
-                                padding: '0.75rem',
-                                borderBottom: `1px solid ${darkMode ? '#4B5563' : 'rgba(0, 0, 0, 0.05)'}`,
-                                transition: 'background-color 0.2s'
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = darkMode ? '#4B5563' : 'rgba(255, 153, 51, 0.05)'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'start', gap: '0.5rem' }}>
-                                <div style={{ flex: 1 }}>
-                                  <p style={{ fontSize: '0.875rem', color: darkMode ? '#D1D5DB' : '#374151' }}>{notif.message}</p>\n                                </div>
-                                <button
-                                  onClick={() => removeNotification(notif.id)}
-                                  style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    color: darkMode ? '#9CA3AF' : '#6B7280',
-                                    padding: '0.25rem'
-                                  }}
-                                  title="Mark as read"
-                                >
-                                  <Check style={{ width: '1rem', height: '1rem' }} />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                          {notifications.length > 5 && (
-                            <div style={{ padding: '0.5rem', textAlign: 'center', fontSize: '0.75rem', color: '#6B7280' }}>
-                              +{notifications.length - 5} more notifications
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div style={{ padding: '1.5rem', textAlign: 'center', color: darkMode ? '#9CA3AF' : '#6B7280' }}>
-                          <Bell style={{ width: '2rem', height: '2rem', margin: '0 auto 0.5rem', opacity: 0.5 }} />
-                          <p style={{ fontSize: '0.875rem' }}>No notifications</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 {/* Mobile Navigation */}
@@ -481,8 +310,22 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                 </nav>
 
                 {/* Mobile User Section */}
-                <div style={{ padding: '1rem', borderTop: '1px solid rgba(255, 153, 51, 0.2)' }}>
-                  <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.78)', backdropFilter: 'blur(12px)', borderRadius: '1rem', padding: '1rem', border: '1px solid rgba(255, 153, 51, 0.08)' }}>
+                <div style={{ padding: '1rem', borderTop: '1px solid rgba(184, 115, 51, 0.2)' }}>
+                  <div 
+                    onClick={() => {
+                      setCurrentPage('profile');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    style={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.78)', 
+                      backdropFilter: 'blur(12px)', 
+                      borderRadius: '1rem', 
+                      padding: '1rem', 
+                      border: '1px solid rgba(184, 115, 51, 0.08)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       {user?.avatar ? (
                         <img
@@ -494,7 +337,7 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                         <div style={{ 
                           width: '2.5rem', 
                           height: '2.5rem', 
-                          background: 'linear-gradient(to bottom right, #FF9933, #FF8C00)', 
+                          background: 'linear-gradient(to bottom right, #B87333, #4A2C2A)', 
                           borderRadius: '50%', 
                           display: 'flex', 
                           alignItems: 'center', 
@@ -508,18 +351,19 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                       )}
                       <div style={{ marginLeft: '0.75rem', flex: 1 }}>
                         <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1F2937' }}>{user.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#FF8C00', fontWeight: '500' }}>{user.rank}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#B87333', fontWeight: '500' }}>{user.rank}</div>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         {user.isVip && (
                           <Crown style={{ width: '1.25rem', height: '1.25rem', color: '#EAB308' }} />
                         )}
                         <button
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation(); // Prevent profile navigation
                             try {
                               await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                            } catch (e) {
-                              console.error('Logout failed', e);
+                            } catch (err) {
+                              console.error('Logout failed', err);
                             }
                             setUser(null);
                             setIsMobileMenuOpen(false);
@@ -528,7 +372,7 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
                           title="Logout"
                           style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
                         >
-                          <LogOut style={{ width: '1rem', height: '1rem', color: '#FF6B35' }} />
+                          <LogOut style={{ width: '1rem', height: '1rem', color: '#B87333' }} />
                         </button>
                       </div>
                     </div>
@@ -544,12 +388,20 @@ function Navigation({ currentPage, setCurrentPage, isMobileMenuOpen, setIsMobile
 }
 
 function AppContent() {
-  const { currentPage, setCurrentPage, isLoading, user, notifications, removeNotification, darkMode, toggleDarkMode } = useApp();
+  const { currentPage, setCurrentPage, isLoading, user, notifications, removeNotification, markNotificationRead, darkMode, toggleDarkMode, setUser, fetchNotifications } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLanding, setShowLanding] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [expandedNotifs, setExpandedNotifs] = useState(new Set());
   const navigate = useNavigate();
-  const { setUser } = useApp();
+
+  // Handle bell icon click - refresh notifications and open dropdown
+  const handleBellClick = async () => {
+    setIsNotifOpen(!isNotifOpen);
+    if (!isNotifOpen && fetchNotifications) {
+      await fetchNotifications();
+    }
+  };
 
   // If a logged-in user arrives and `currentPage` is left as 'panel-select',
   // force it to the appropriate dashboard so they don't see the selector.
@@ -574,6 +426,8 @@ function AppContent() {
         return <Dashboard />;
       case 'reviews':
         return <Reviews />;
+      case 'notifications':
+        return <Notifications />;
       case 'user':
         return <User />;
       case 'profile':
@@ -598,6 +452,26 @@ function AppContent() {
     setCurrentPage('panel-select');
   };
 
+  function formatDate(d) {
+    const dt = new Date(d);
+    const pad = (v) => String(v).padStart(2, '0');
+    return `${pad(dt.getDate())}/${pad(dt.getMonth()+1)}/${dt.getFullYear()} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+  }
+
+  const unreadCount = (notifications || []).filter(n => !n.read).length;
+
+  const openNotifications = async () => {
+    setIsNotifOpen(v => !v);
+    // if opening, mark unread as read (optimistic)
+    if (!isNotifOpen && notifications && notifications.length) {
+      for (const n of notifications) {
+        if (!n.read) {
+          try { await markNotificationRead(n.id || n._id); } catch (e) { /* ignore */ }
+        }
+      }
+    }
+  };
+ 
   if (isLoading) {
     return (
       <div style={{ 
@@ -605,7 +479,7 @@ function AppContent() {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: 'linear-gradient(to bottom right, rgba(255, 153, 51, 0.05), white, rgba(255, 140, 0, 0.05))'
+        background: 'linear-gradient(to bottom right, rgba(184, 115, 51, 0.05), white, rgba(184, 115, 51, 0.05))'
       }}>
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
@@ -613,7 +487,7 @@ function AppContent() {
           transition={{ duration: 0.5 }}
           style={{ textAlign: 'center' }}
         >
-          <Coffee style={{ width: '4rem', height: '4rem', color: '#FF9933', margin: '0 auto 1rem', animation: 'pulse 2s infinite' }} />
+          <Coffee style={{ width: '4rem', height: '4rem', color: '#B87333', margin: '0 auto 1rem', animation: 'pulse 2s infinite' }} />
           <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1F2937', marginBottom: '0.5rem' }}>
             Loading Millionaire Chai...
           </h2>
@@ -633,7 +507,6 @@ function AppContent() {
       background: darkMode ? '#111827' : '#ffffff',
       transition: 'background-color 0.3s ease'
     }}>
-      <ToastContainer notifications={notifications} onRemove={removeNotification} />
       <ScrollToTop />
       <div className="lg:flex">
         <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} darkMode={darkMode} />
@@ -645,9 +518,9 @@ function AppContent() {
             animate={{ opacity: 1, y: 0 }}
             className="sticky top-0 z-20"
             style={{
-              background: 'linear-gradient(135deg, #FF9933 0%, #FF8C00 50%, #FFA500 100%)',
+              background: 'linear-gradient(135deg, #B87333 0%, #4A2C2A 50%, #B87333 100%)',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 20px rgba(255, 153, 51, 0.3), 0 0 40px rgba(255, 153, 51, 0.1)',
+              boxShadow: '0 4px 20px rgba(184, 115, 51, 0.3), 0 0 40px rgba(184, 115, 51, 0.1)',
             }}
           >
             {/* Decorative top shine */}
@@ -751,8 +624,8 @@ function AppContent() {
 
                 {/* Right: User Info */}
                 <div className="flex items-center gap-3">
-                  {/* Points Badge */}
-                  {user?.points !== undefined && (
+                  {/* Points Badge - Hidden for Admin */}
+                  {user?.points !== undefined && user?.role !== 'admin' && user?.role !== 'superadmin' && (
                     <motion.div
                       whileHover={{ scale: 1.05, y: -2 }}
                       className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full"
@@ -770,272 +643,210 @@ function AppContent() {
                     </motion.div>
                   )}
 
-                  {/* User Avatar with Dropdown */}
-                  <div className="relative">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                      className="relative cursor-pointer"
-                    >
-                      {user?.profileImage ? (
-                        <img
-                          src={user.profileImage}
-                          alt={user.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                          style={{
-                            border: '2px solid rgba(255, 255, 255, 0.5)',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                          }}
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                          style={{
-                            background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))',
-                            backdropFilter: 'blur(10px)',
-                            border: '2px solid rgba(255, 255, 255, 0.5)',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                          }}
-                        >
-                          {user?.name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                      )}
-                      
-                      {/* Online indicator */}
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+                  {/* Notification Bell Icon */}
+                  {user && (
+                    <div className="relative">
+                      <motion.button
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleBellClick}
+                        className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full"
                         style={{
-                          background: '#10b981',
-                          boxShadow: '0 0 10px rgba(16, 185, 129, 0.8)',
+                          background: 'rgba(255, 255, 255, 0.25)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255, 255, 255, 0.4)',
+                          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
                         }}
-                      />
-                    </motion.button>
-
-                    {/* Dropdown Menu */}
-                    <AnimatePresence>
-                      {isProfileDropdownOpen && (
-                        <>
-                          {/* Backdrop to close dropdown */}
-                          <div 
-                            className="fixed inset-0 z-30"
-                            onClick={() => setIsProfileDropdownOpen(false)}
-                          />
-                          
+                      >
+                        <Bell className="w-5 h-5 text-white" />
+                        {unreadCount > 0 && (
                           <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                            className="absolute right-0 mt-2 w-64 rounded-xl overflow-hidden z-40"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
                             style={{
-                              background: darkMode ? '#1F2937' : 'white',
-                              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-                              transition: 'background-color 0.3s ease',
+                              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                              color: 'white',
+                              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)',
                             }}
                           >
-                            {/* User Info Header */}
-                            <div className="p-4" style={{
-                              background: darkMode 
-                                ? 'linear-gradient(135deg, #374151 0%, #1F2937 100%)'
-                                : 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
-                              borderBottom: `1px solid ${darkMode ? 'rgba(75, 85, 99, 0.5)' : 'rgba(255, 153, 51, 0.2)'}`,
-                              transition: 'all 0.3s ease',
-                            }}>
-                              <div className="flex items-center gap-3">
-                                {user?.profileImage ? (
-                                  <img
-                                    src={user.profileImage}
-                                    alt={user.name}
-                                    className="w-12 h-12 rounded-full object-cover"
-                                    style={{
-                                      boxShadow: '0 4px 15px rgba(255, 153, 51, 0.3)',
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                                    style={{
-                                      background: 'linear-gradient(135deg, #FF9933, #FF8C00)',
-                                      boxShadow: '0 4px 15px rgba(255, 153, 51, 0.3)',
-                                    }}
-                                  >
-                                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold truncate" style={{ 
-                                    color: darkMode ? '#F9FAFB' : '#111827',
-                                    transition: 'color 0.3s ease'
-                                  }}>
-                                    {user?.name || 'User Name'}
-                                  </h3>
-                                  <p className="text-sm truncate" style={{ 
-                                    color: darkMode ? '#D1D5DB' : '#6B7280',
-                                    transition: 'color 0.3s ease'
-                                  }}>
-                                    {user?.email || 'user@example.com'}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Menu Options */}
-                            <div className="py-2">
-                              {/* My Profile */}
-                              <motion.button
-                                whileHover={{ backgroundColor: darkMode ? '#374151' : '#FFF7ED' }}
-                                onClick={() => {
-                                  setCurrentPage('profile');
-                                  setIsProfileDropdownOpen(false);
-                                }}
-                                className="w-full px-4 py-3 flex items-center gap-3 text-left transition-colors"
-                                style={{
-                                  border: 'none',
-                                  background: 'transparent',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center"
-                                  style={{ background: darkMode ? '#4B5563' : '#EEF2FF' }}
-                                >
-                                  <UserCircle className="w-4 h-4" style={{ color: darkMode ? '#93C5FD' : '#4F46E5' }} />
-                                </div>
-                                <span className="font-medium" style={{ 
-                                  color: darkMode ? '#F9FAFB' : '#111827',
-                                  transition: 'color 0.3s ease'
-                                }}>My Profile</span>
-                              </motion.button>
-
-                              {/* Settings */}
-                              <motion.button
-                                whileHover={{ backgroundColor: darkMode ? '#374151' : '#FFF7ED' }}
-                                onClick={() => {
-                                  // Navigate to settings based on user role
-                                  if (user?.role === 'admin') {
-                                    setCurrentPage('admin:settings');
-                                  } else {
-                                    setCurrentPage('wallet'); // or any settings page for regular users
-                                  }
-                                  setIsProfileDropdownOpen(false);
-                                }}
-                                className="w-full px-4 py-3 flex items-center gap-3 text-left transition-colors"
-                                style={{
-                                  border: 'none',
-                                  background: 'transparent',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center"
-                                  style={{ background: darkMode ? '#4B5563' : '#F3F4F6' }}
-                                >
-                                  <Settings className="w-4 h-4" style={{ color: darkMode ? '#9CA3AF' : '#6B7280' }} />
-                                </div>
-                                <span className="font-medium" style={{ 
-                                  color: darkMode ? '#F9FAFB' : '#111827',
-                                  transition: 'color 0.3s ease'
-                                }}>Settings</span>
-                              </motion.button>
-
-                              {/* Dark Mode Toggle */}
-                              <motion.button
-                                whileHover={{ backgroundColor: darkMode ? '#374151' : '#FFF7ED' }}
-                                onClick={() => {
-                                  toggleDarkMode();
-                                }}
-                                className="w-full px-4 py-3 flex items-center gap-3 text-left transition-colors"
-                                style={{
-                                  border: 'none',
-                                  background: 'transparent',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center relative overflow-hidden"
-                                  style={{ background: darkMode ? '#1F2937' : '#FEF3C7' }}
-                                >
-                                  <AnimatePresence mode="wait">
-                                    {darkMode ? (
-                                      <motion.div
-                                        key="moon"
-                                        initial={{ rotate: -180, opacity: 0 }}
-                                        animate={{ rotate: 0, opacity: 1 }}
-                                        exit={{ rotate: 180, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                      >
-                                        <Moon className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-                                      </motion.div>
-                                    ) : (
-                                      <motion.div
-                                        key="sun"
-                                        initial={{ rotate: 180, opacity: 0 }}
-                                        animate={{ rotate: 0, opacity: 1 }}
-                                        exit={{ rotate: -180, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                      >
-                                        <Sun className="w-4 h-4 text-yellow-600" />
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </div>
-                                <div className="flex-1 flex items-center justify-between">
-                                  <span className="font-medium" style={{ 
-                                    color: darkMode ? '#F9FAFB' : '#111827',
-                                    transition: 'color 0.3s ease'
-                                  }}>
-                                    {darkMode ? 'Dark Mode' : 'Light Mode'}
-                                  </span>
-                                  <div className="relative w-11 h-6 rounded-full transition-colors"
-                                    style={{ background: darkMode ? '#FF9933' : '#D1D5DB' }}
-                                  >
-                                    <motion.div
-                                      animate={{ x: darkMode ? 20 : 2 }}
-                                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                      className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-md"
-                                    />
-                                  </div>
-                                </div>
-                              </motion.button>
-
-                              {/* Divider */}
-                              <div className="my-2 mx-4 border-t" style={{ 
-                                borderColor: darkMode ? '#4B5563' : '#E5E7EB',
-                                transition: 'border-color 0.3s ease'
-                              }} />
-
-                              {/* Logout */}
-                              <motion.button
-                                whileHover={{ backgroundColor: darkMode ? '#7F1D1D' : '#FEF2F2' }}
-                                onClick={async () => {
-                                  try {
-                                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                                  } catch (e) {
-                                    console.error('Logout failed', e);
-                                  }
-                                  setUser(null);
-                                  setIsProfileDropdownOpen(false);
-                                  navigate('/');
-                                }}
-                                className="w-full px-4 py-3 flex items-center gap-3 text-left transition-colors"
-                                style={{
-                                  border: 'none',
-                                  background: 'transparent',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center"
-                                  style={{ background: darkMode ? '#991B1B' : '#FEF2F2' }}
-                                >
-                                  <LogOut className="w-4 h-4" style={{ color: darkMode ? '#FCA5A5' : '#DC2626' }} />
-                                </div>
-                                <span className="font-medium" style={{ color: darkMode ? '#FCA5A5' : '#DC2626' }}>Logout</span>
-                              </motion.button>
-                            </div>
+                            {unreadCount > 9 ? '9+' : unreadCount}
                           </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                        )}
+                      </motion.button>
+
+                      {/* Notifications Dropdown */}
+                      <AnimatePresence>
+                        {isNotifOpen && (
+                          <>
+                            {/* Backdrop */}
+                            <div 
+                              className="fixed inset-0 z-30"
+                              onClick={() => setIsNotifOpen(false)}
+                            />
+                            
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              transition={{ duration: 0.2 }}
+                              className="absolute right-0 mt-2 w-96 rounded-2xl overflow-hidden z-40"
+                              style={{
+                                background: darkMode ? '#1F2937' : 'white',
+                                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                border: `1px solid ${darkMode ? '#374151' : 'rgba(184, 115, 51, 0.1)'}`,
+                                maxHeight: '32rem',
+                              }}
+                            >
+                              {/* Header */}
+                              <div 
+                                className="flex items-center justify-between px-4 py-3 border-b"
+                                style={{ 
+                                  borderColor: darkMode ? '#374151' : 'rgba(184, 115, 51, 0.1)',
+                                  background: darkMode ? '#111827' : 'rgba(184, 115, 51, 0.05)'
+                                }}
+                              >
+                                <h3 className="font-bold text-sm" style={{ color: darkMode ? '#F9FAFB' : '#111827' }}>
+                                  Notifications
+                                </h3>
+                                <button
+                                  onClick={() => setIsNotifOpen(false)}
+                                  className="text-xs"
+                                  style={{ 
+                                    color: darkMode ? '#9CA3AF' : '#6B7280',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '0.375rem',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Close
+                                </button>
+                              </div>
+
+                              {/* Notifications List */}
+                              <div className="overflow-y-auto" style={{ maxHeight: '28rem' }}>
+                                {(notifications || []).length === 0 ? (
+                                  <div className="p-8 text-center">
+                                    <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" style={{ color: darkMode ? '#9CA3AF' : '#6B7280' }} />
+                                    <p className="text-sm" style={{ color: darkMode ? '#9CA3AF' : '#6B7280' }}>
+                                      No notifications
+                                    </p>
+                                  </div>
+                                ) : (
+                                  (notifications || [])
+                                    .slice()
+                                    .sort((a, b) => {
+                                      if (a.read === b.read) return new Date(b.createdAt) - new Date(a.createdAt);
+                                      return a.read ? 1 : -1;
+                                    })
+                                    .map((n) => {
+                                      const id = n.id || n._id;
+                                      const isExpanded = expandedNotifs.has(id);
+                                      const fullTextRaw = n.message || n.text || '';
+                                      const fullText = (fullTextRaw || '').replace(/\s+/g, ' ').trim();
+                                      const preview = fullText.length > 80 ? fullText.slice(0, 80) + '...' : fullText;
+                                      const long = fullText.length > preview.length;
+
+                                      return (
+                                        <motion.div
+                                          key={id}
+                                          initial={{ opacity: 0, x: -20 }}
+                                          animate={{ opacity: 1, x: 0 }}
+                                          className="flex items-start px-4 py-3 gap-3 border-b"
+                                          style={{
+                                            background: n.read 
+                                              ? (darkMode ? '#1F2937' : '#F9FAFB')
+                                              : (darkMode ? '#374151' : 'white'),
+                                            borderColor: darkMode ? '#374151' : 'rgba(184, 115, 51, 0.1)',
+                                          }}
+                                        >
+                                          <div 
+                                            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                                            style={{
+                                              background: 'linear-gradient(135deg, #B87333, #4A2C2A)',
+                                              boxShadow: '0 4px 8px rgba(184, 115, 51, 0.3)'
+                                            }}
+                                          >
+                                            <Coffee className="w-5 h-5 text-white" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between gap-2">
+                                              <div className="text-sm font-medium flex-1" style={{ color: darkMode ? '#F9FAFB' : '#111827' }}>
+                                                {isExpanded ? fullText : preview}
+                                              </div>
+                                              <div className="text-xs text-right flex-shrink-0" style={{ color: darkMode ? '#9CA3AF' : '#6B7280' }}>
+                                                {n.createdAt ? formatDate(n.createdAt) : ''}
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-2">
+                                              <div>
+                                                {long && (
+                                                  <button
+                                                    onClick={() => {
+                                                      const next = new Set(expandedNotifs);
+                                                      if (isExpanded) next.delete(id);
+                                                      else next.add(id);
+                                                      setExpandedNotifs(next);
+                                                    }}
+                                                    className="text-xs font-medium"
+                                                    style={{
+                                                      color: '#B87333',
+                                                      background: 'transparent',
+                                                      border: 'none',
+                                                      cursor: 'pointer',
+                                                      padding: '0.25rem 0.5rem',
+                                                      borderRadius: '0.25rem'
+                                                    }}
+                                                  >
+                                                    {isExpanded ? 'Show less' : 'Read more'}
+                                                  </button>
+                                                )}
+                                              </div>
+                                              <button
+                                                onClick={() => markNotificationRead(id)}
+                                                className="text-xs font-medium px-3 py-1"
+                                                style={{
+                                                  color: n.read ? (darkMode ? '#9CA3AF' : '#9CA3AF') : '#B87333',
+                                                  background: 'transparent',
+                                                  border: 'none',
+                                                  cursor: n.read ? 'default' : 'pointer',
+                                                  opacity: n.read ? 0.5 : 1,
+                                                }}
+                                              >
+                                                Read
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </motion.div>
+                                      );
+                                    })
+                                )}
+                              </div>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                 </div>
+
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="lg:hidden"
+                  style={{
+                    padding: '0.5rem',
+                    borderRadius: '0.5rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    marginLeft: '0.75rem'
+                  }}
+                >
+                  <Menu style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+                </button>
               </div>
             </div>
 

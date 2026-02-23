@@ -37,11 +37,11 @@ export function Wallet() {
   const getTypeColor = (type) => {
     switch (type) {
       case 'purchase':
-        return 'text-tea-amber bg-tea-amber/10';
+        return 'text-caramel bg-caramel/10';
       case 'bonus':
         return 'text-green-600 bg-green-100';
       case 'milestone':
-        return 'text-tea-gold bg-tea-gold/10';
+        return 'text-darkBrown bg-darkBrown/10';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -192,7 +192,7 @@ export function Wallet() {
           </PrimaryButton>
 
           {hasOpenWithdrawal && (
-            <div className="text-sm text-yellow-700 font-semibold mt-3 p-3 bg-yellow-50 border-2 border-yellow-400/40 rounded-lg">You have an open withdrawal request. You cannot submit another until it is processed.</div>
+            <div className="text-sm text-darkBrown font-semibold mt-3 p-3 bg-caramel/10 border-2 border-caramel/40 rounded-lg">You have an open withdrawal request. You cannot submit another until it is processed.</div>
           )}
 
           {showWithdrawModal && (

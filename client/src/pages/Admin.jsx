@@ -108,7 +108,7 @@ export function Admin({ initialTab }) {
 
   const getStatus = (u) => {
     const teas = Number(u?.teasConsumed || 0);
-    if (teas >= 1000) return { label: 'Gold', classes: 'bg-yellow-100 text-yellow-800' };
+    if (teas >= 1000) return { label: 'Gold', classes: 'bg-luxury-gold/20 text-darkBrown' };
     if (teas >= 100) return { label: 'Silver', classes: 'bg-slate-100 text-slate-700' };
     return { label: 'Basic', classes: 'bg-gray-100 text-gray-600' };
   };
@@ -782,7 +782,8 @@ export function Admin({ initialTab }) {
                       setIsSubmittingTeas(false);
                       return;
                     }
-                    addNotification({ id: Date.now(), text: `Updated: +${body.teasAdded} teas, +${body.pointsAdded} points` });
+                    // Do not add detailed user notification here in admin UI.
+                    // The server emits a concise `admin:notificationSent` event to admins.
                     // refresh rankings and admin KPIs
                     const [ranksRes, dashRes] = await Promise.all([
                       fetch('/api/rewards/rankings'),

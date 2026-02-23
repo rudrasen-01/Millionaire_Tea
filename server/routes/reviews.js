@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Review = require('../models/Review');
+const AdminNotification = require('../models/AdminNotification');
 const { auth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -16,6 +17,20 @@ router.post('/', auth, [
     const { rating, comment } = req.body;
     const review = new Review({ userId: req.user._id, name: req.user.name || 'Anonymous', rating, comment, approved: false });
     await review.save();
+    // notify admins that a new review was submitted (admins filter client-side)
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to('admins').emit('admin:newReview', { id: review._id, userId: review.userId, name: review.name, rating: review.rating, comment: review.comment, createdAt: review.createdAt });
+      }
+      // persist admin notification for audit and UI
+      try {
+        const adminMsg = `New review submitted by ${review.name || review.userId}`;
+        const an = await AdminNotification.create({ actorUserId: review.userId, actorName: review.name || '', action: 'review:submitted', message: adminMsg, details: { reviewId: review._id, rating: review.rating, comment: review.comment }, createdAt: review.createdAt });
+        try { const io2 = req.app.get('io'); if (io2) io2.to('admins').emit('admin:notification', an); } catch (e) { /* ignore */ }
+      } catch (e) { /* ignore */ }
+    } catch (e) { /* ignore */ }
+
     return res.status(201).json({ message: 'Review submitted and pending approval', review });
   } catch (err) {
     console.error('Submit review error', err);

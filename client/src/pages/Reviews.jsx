@@ -36,7 +36,7 @@ export function Reviews() {
           <div style={{ marginBottom: '0.5rem', fontWeight: '600' }}>Share your experience</div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
             {[1,2,3,4,5].map(n => (
-              <button key={n} onClick={() => setRating(n)} style={{ background: n <= rating ? '#FBBF24' : 'transparent', border: '1px solid #E5E7EB', padding: '0.35rem 0.6rem', borderRadius: '0.35rem', cursor: 'pointer' }}>{n}★</button>
+              <button key={n} onClick={() => setRating(n)} style={{ background: n <= rating ? '#B87333' : 'transparent', border: '1px solid #E5E7EB', padding: '0.35rem 0.6rem', borderRadius: '0.35rem', cursor: 'pointer' }}>{n}★</button>
             ))}
           </div>
           <textarea value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder="Write a short comment (optional)" rows={3} style={{ width: '100%', padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #E5E7EB', marginBottom: '0.5rem' }} />
@@ -54,7 +54,7 @@ export function Reviews() {
                 if (r.ok) { const jb = await r.json().catch(() => ({})); setUserReviews(jb.reviews || []); }
               } catch (e) { console.error('Submit review error', e); addNotification({ id: Date.now(), text: 'Network error' }); }
               finally { setIsSubmittingReview(false); }
-            }} style={{ background: 'linear-gradient(to right,#FF9933,#FF8C00)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: 'none' }}>{isSubmittingReview ? 'Submitting...' : 'Submit Review'}</button>
+            }} style={{ background: 'linear-gradient(to right,#B87333,#4A2C2A)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: 'none' }}>{isSubmittingReview ? 'Submitting...' : 'Submit Review'}</button>
             <button onClick={() => { setRating(5); setReviewComment(''); }} style={{ background: 'transparent', border: '1px solid #E5E7EB', padding: '0.5rem 1rem', borderRadius: '0.5rem' }}>Clear</button>
           </div>
         </motion.div>
